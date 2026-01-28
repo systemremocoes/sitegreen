@@ -1,0 +1,8 @@
+
+{
+  "name": "Green Emergências Médicas",
+  "description": "Uma plataforma moderna e de alta conversão para serviços de emergência médica, transporte de pacientes e cobertura de eventos, focada em UX/UI intuitivo e confiança.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
