@@ -28,7 +28,7 @@ const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
           xmlns="http://www.w3.org/2000/svg"
         >
           <path
-            d="M0,0 L80,0 C70,40 100,60 40,100 L0,100 Z"
+            d="M0,0 L100,0 L100,100 L0,100 Z"
             fill="white"
           />
         </svg>
