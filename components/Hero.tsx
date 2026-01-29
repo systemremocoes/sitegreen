@@ -28,7 +28,7 @@ const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
           xmlns="http://www.w3.org/2000/svg"
         >
           <path
-            d="M0,0 L100,0 C100,20 80,80 65,100 L0,100 Z"
+            d="M0,0 L100,0 C95,30 60,80 20,100 L0,100 Z"
             fill="white"
           />
         </svg>
@@ -84,13 +84,13 @@ const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
               <span className="text-3xl md:text-4xl font-black text-[#0a2619] tracking-tight">UTI</span>
               <span className="text-xs md:text-sm uppercase font-bold text-emerald-600 tracking-wider">Suporte Avançado</span>
             </div>
-            <div className="flex flex-col border-l-4 border-emerald-500 pl-4 whitespace-nowrap">
+            <div className="flex flex-col border-l-4 border-emerald-500 pl-4 whitespace-nowrap bg-white/90 backdrop-blur-md p-3 rounded-xl shadow-sm">
               <span className="text-3xl md:text-4xl font-black text-[#0a2619] tracking-tight">BÁSICA</span>
-              <span className="text-xs md:text-sm uppercase font-bold text-emerald-500 tracking-wider">Remoção Segura</span>
+              <span className="text-xs md:text-sm uppercase font-bold text-emerald-600 tracking-wider">Remoção Segura</span>
             </div>
-            <div className="flex flex-col border-l-4 border-emerald-500 pl-4 whitespace-nowrap">
-              <span className="text-3xl md:text-4xl font-black text-white tracking-tight">BASE</span>
-              <span className="text-xs md:text-sm uppercase font-bold text-emerald-200 tracking-wider">Própria em Limeira</span>
+            <div className="flex flex-col border-l-4 border-emerald-500 pl-4 whitespace-nowrap bg-white/90 backdrop-blur-md p-3 rounded-xl shadow-sm">
+              <span className="text-3xl md:text-4xl font-black text-[#0a2619] tracking-tight">BASE</span>
+              <span className="text-xs md:text-sm uppercase font-bold text-emerald-600 tracking-wider">Própria em Limeira</span>
             </div>
           </div>
         </div>
