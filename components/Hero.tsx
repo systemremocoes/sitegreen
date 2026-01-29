@@ -28,13 +28,13 @@ const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
           xmlns="http://www.w3.org/2000/svg"
         >
           <path
-            d="M0,0 L100,0 L100,100 L0,100 Z"
+            d="M0,0 L100,0 C95,30 60,80 20,100 L0,100 Z"
             fill="white"
           />
         </svg>
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto lg:ml-24 lg:mr-auto px-4 sm:px-6 lg:px-8 py-24 pt-32 lg:py-48 flex flex-col lg:flex-row items-center gap-12">
+      <div className="relative z-10 max-w-7xl mx-auto lg:ml-16 lg:mr-auto px-4 sm:px-6 lg:px-8 py-24 pt-32 lg:py-48 flex flex-col lg:flex-row items-center gap-12">
         <div className="w-full lg:w-1/2">
           <div className="inline-flex items-center space-x-2 bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 px-4 py-1.5 rounded-full mb-8">
             <Activity size={16} className="text-emerald-600" />
@@ -75,7 +75,7 @@ const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
           </div>
 
           {/* Seção de Status com 4 colunas incluindo Suporte Básico */}
-          <div className="grid grid-cols-2 gap-y-10 md:flex md:flex-row md:items-center md:gap-8 lg:gap-12">
+          <div className="grid grid-cols-2 gap-y-10 md:flex md:flex-row md:items-center md:gap-8 lg:gap-8">
             <div className="flex flex-col border-l-4 border-emerald-500 pl-4 whitespace-nowrap">
               <span className="text-3xl md:text-4xl font-black text-[#0a2619] tracking-tight">24h</span>
               <span className="text-xs md:text-sm uppercase font-bold text-emerald-600 tracking-wider">Atendimento Imediato</span>
@@ -86,11 +86,11 @@ const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
             </div>
             <div className="flex flex-col border-l-4 border-emerald-500 pl-4 whitespace-nowrap">
               <span className="text-3xl md:text-4xl font-black text-[#0a2619] tracking-tight">BÁSICA</span>
-              <span className="text-xs md:text-sm uppercase font-bold text-emerald-600 tracking-wider">Remoção Segura</span>
+              <span className="text-xs md:text-sm uppercase font-bold text-emerald-500 tracking-wider">Remoção Segura</span>
             </div>
             <div className="flex flex-col border-l-4 border-emerald-500 pl-4 whitespace-nowrap">
-              <span className="text-3xl md:text-4xl font-black text-[#0a2619] tracking-tight">BASE</span>
-              <span className="text-xs md:text-sm uppercase font-bold text-emerald-600 tracking-wider">Própria em Limeira</span>
+              <span className="text-3xl md:text-4xl font-black text-white tracking-tight">BASE</span>
+              <span className="text-xs md:text-sm uppercase font-bold text-emerald-200 tracking-wider">Própria em Limeira</span>
             </div>
           </div>
         </div>
