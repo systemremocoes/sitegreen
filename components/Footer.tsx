@@ -64,7 +64,7 @@ const Footer: React.FC<FooterProps> = ({ navigate }) => {
               </div>
               <div className="flex items-center space-x-2">
                 <Activity size={16} className="text-emerald-500" />
-                <p>WhatsApp: (19) 98278-0943</p>
+                <a href="https://wa.me/5519998049901" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 transition-colors">WhatsApp: (19) 99804-9901</a>
               </div>
               <div className="flex items-center space-x-2">
                 <Mail size={16} className="text-emerald-500" />

@@ -85,7 +85,7 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({ isOpen, onClose }) => {
         const message = `*Solicitação de Cotação (Site)*%0A%0A*Paciente:* ${formData.patientName} (${formData.patientAge} anos)%0A*Origem:* ${formData.origin}%0A*Destino:* ${formData.destination}%0A*Data/Hora:* ${formData.date} às ${formData.time}%0A*Tipo:* ${formData.serviceType}%0A*Contato:* ${formData.contactPhone}%0A*Obs:* ${formData.observations}%0A%0A*Status:* Cotação Criada com Sucesso`;
 
         // Abre WhatsApp e Fecha Modal
-        window.open(`https://wa.me/5519982780943?text=${message}`, '_blank');
+        window.open(`https://wa.me/5519998049901?text=${message}`, '_blank');
 
         setTimeout(() => {
             onClose();
@@ -110,7 +110,7 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({ isOpen, onClose }) => {
 
         // Fallback para WhatsApp mesmo com erro
         const message = `*Erro na Integração do Site - Solicitação Manual*%0A%0A*Paciente:* ${formData.patientName}%0A*Origem:* ${formData.origin}%0A*Destino:* ${formData.destination}`;
-        window.open(`https://wa.me/5519982780943?text=${message}`, '_blank');
+        window.open(`https://wa.me/5519998049901?text=${message}`, '_blank');
         onClose();
     } finally {
         setLoading(false);

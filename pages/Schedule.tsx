@@ -104,7 +104,7 @@ const Schedule: React.FC = () => {
 
             // Fallback WhatsApp em caso de erro
             const message = `*Erro Site - Solicitação Manual*%0A%0A*Paciente:* ${formData.patientName}%0A*Origem:* ${formData.origin}%0A*Destino:* ${formData.destination}`;
-            window.open(`https://wa.me/5519982780943?text=${message}`, '_blank');
+            window.open(`https://wa.me/5519998049901?text=${message}`, '_blank');
         } finally {
             setLoading(false);
         }
@@ -448,7 +448,7 @@ const Schedule: React.FC = () => {
                                             <button
                                                 onClick={() => {
                                                     const message = `*Nova Solicitação (Site)*%0A%0A*Protocolo:* ${successProtocol}%0A*Paciente:* ${formData.patientName}%0A*Origem:* ${formData.origin}%0A*Destino:* ${formData.destination}%0A*Data:* ${formData.date} às ${formData.time}%0A*Tipo:* ${formData.serviceType}`;
-                                                    window.open(`https://wa.me/5519982780943?text=${message}`, '_blank');
+                                                    window.open(`https://wa.me/5519998049901?text=${message}`, '_blank');
                                                 }}
                                                 className="bg-green-500 text-white px-8 py-4 rounded-xl font-bold hover:bg-green-600 transition-colors shadow-lg flex items-center justify-center gap-2"
                                             >

@@ -11,7 +11,7 @@ const WhatsAppButton: React.FC = () => {
       </div>
       
       <a
-        href="https://wa.me/5519982780943"
+        href="https://wa.me/5519998049901"
         target="_blank"
         rel="noopener noreferrer"
         className="w-16 h-16 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full flex items-center justify-center shadow-2xl transition-all transform hover:scale-110 active:scale-95 group relative"
