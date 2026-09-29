@@ -5,10 +5,12 @@ import Home from './pages/Home';
 import About from './pages/About';
 import Schedule from './pages/Schedule';
 import ServiceDetail from './pages/ServiceDetail';
+import Privacy from './pages/Privacy';
+import Terms from './pages/Terms';
 import Footer from './components/Footer';
 import WhatsAppButton from './components/WhatsAppButton';
 
-export type Page = 'home' | 'about' | 'service-detail' | 'schedule';
+export type Page = 'home' | 'about' | 'service-detail' | 'schedule' | 'privacy' | 'terms';
 
 const App: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -38,6 +40,8 @@ const App: React.FC = () => {
         {currentPage === 'home' && <Home onNavigate={navigate} />}
         {currentPage === 'about' && <About />}
         {currentPage === 'schedule' && <Schedule />}
+        {currentPage === 'privacy' && <Privacy onNavigate={navigate} />}
+        {currentPage === 'terms' && <Terms onNavigate={navigate} />}
         {currentPage === 'service-detail' && selectedServiceId && (
           <ServiceDetail serviceId={selectedServiceId} onNavigate={navigate} />
         )}

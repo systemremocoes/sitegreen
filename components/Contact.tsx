@@ -21,7 +21,7 @@ const Contact: React.FC = () => {
                 </div>
                 <div>
                   <h4 className="font-bold text-emerald-400 uppercase text-xs tracking-widest mb-1">Telefone Fixo</h4>
-                  <p className="text-white text-lg font-semibold">(19) 3792-3947</p>
+                  <a href="tel:1937923947" className="text-white text-lg font-semibold hover:text-emerald-300 transition-colors">(19) 3792-3947</a>
                 </div>
               </div>
 
@@ -31,7 +31,14 @@ const Contact: React.FC = () => {
                 </div>
                 <div>
                   <h4 className="font-bold text-emerald-400 uppercase text-xs tracking-widest mb-1">WhatsApp Emergência</h4>
-                  <a href="https://wa.me/5519998049901" target="_blank" rel="noopener noreferrer" className="text-white text-lg font-semibold hover:text-emerald-300 transition-colors">(19) 99804-9901</a>
+                  <a 
+                    href="https://wa.me/5519998049901?text=Ol%C3%A1!%20Encontrei%20a%20Green%20no%20Google%20e%20gostaria%20de%20um%20or%C3%A7amento%20de%20ambul%C3%A2ncia." 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="text-white text-lg font-semibold hover:text-emerald-300 transition-colors"
+                  >
+                    (19) 99804-9901
+                  </a>
                 </div>
               </div>
 

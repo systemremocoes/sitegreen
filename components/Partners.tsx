@@ -106,7 +106,7 @@ const Partners: React.FC = () => {
           <span className="text-emerald-950 font-bold">Dúvidas se atendemos seu plano?</span>
           <div className="flex items-center gap-4">
             <a 
-              href="https://wa.me/5519998049901" 
+              href="https://wa.me/5519998049901?text=Ol%C3%A1!%20Gostaria%20de%20verificar%20se%20a%20Green%20atende%20o%20meu%20plano%20ou%20conv%C3%AAnio." 
               target="_blank" 
               rel="noopener noreferrer"
               className="px-6 py-2.5 bg-emerald-600 text-white rounded-xl font-black text-sm hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/20"

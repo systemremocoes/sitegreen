@@ -40,6 +40,8 @@ const Footer: React.FC<FooterProps> = ({ navigate }) => {
               <li><button onClick={() => navigate('service-detail', 'uti')} className="hover:text-emerald-400 transition-colors">Ambulância UTI</button></li>
               <li><button onClick={() => navigate('service-detail', 'eventos')} className="hover:text-emerald-400 transition-colors">Cobertura de Eventos</button></li>
               <li><button onClick={() => navigate('service-detail', 'area-protegida')} className="hover:text-emerald-400 transition-colors">Área Protegida</button></li>
+              <li><button onClick={() => navigate('privacy')} className="hover:text-emerald-400 transition-colors">Política de Privacidade</button></li>
+              <li><button onClick={() => navigate('terms')} className="hover:text-emerald-400 transition-colors">Termos de Uso</button></li>
             </ul>
           </div>
 
@@ -60,11 +62,18 @@ const Footer: React.FC<FooterProps> = ({ navigate }) => {
             <div className="space-y-4 text-sm font-medium">
               <div className="flex items-center space-x-2">
                 <Phone size={16} className="text-emerald-500" />
-                <p>(19) 3792-3947</p>
+                <a href="tel:1937923947" className="hover:text-emerald-400 transition-colors">(19) 3792-3947</a>
               </div>
               <div className="flex items-center space-x-2">
                 <Activity size={16} className="text-emerald-500" />
-                <a href="https://wa.me/5519998049901" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 transition-colors">WhatsApp: (19) 99804-9901</a>
+                <a 
+                  href="https://wa.me/5519998049901?text=Ol%C3%A1!%20Encontrei%20a%20Green%20no%20Google%20e%20gostaria%20de%20um%20or%C3%A7amento%20de%20ambul%C3%A2ncia." 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="hover:text-emerald-400 transition-colors"
+                >
+                  WhatsApp: (19) 99804-9901
+                </a>
               </div>
               <div className="flex items-center space-x-2">
                 <Mail size={16} className="text-emerald-500" />
@@ -74,9 +83,16 @@ const Footer: React.FC<FooterProps> = ({ navigate }) => {
           </div>
         </div>
 
-        <div className="pt-8 border-t border-emerald-900 flex flex-col md:flex-row justify-between items-center text-xs font-light">
-          <p>© 2024 Green Emergências Médicas. Todos os direitos reservados.</p>
-          <div className="mt-4 md:mt-0 flex items-center">
+        <div className="pt-8 border-t border-emerald-900/80 flex flex-col md:flex-row justify-between items-center text-xs font-light space-y-4 md:space-y-0">
+          <div className="flex flex-col sm:flex-row items-center space-y-1 sm:space-y-0 sm:space-x-4 text-emerald-100/70">
+            <p>© 2026 Green Emergências Médicas. Todos os direitos reservados.</p>
+            <span className="hidden sm:inline">•</span>
+            <div className="flex space-x-3">
+              <button onClick={() => navigate('privacy')} className="hover:text-emerald-400 transition-colors underline">Privacidade</button>
+              <button onClick={() => navigate('terms')} className="hover:text-emerald-400 transition-colors underline">Termos</button>
+            </div>
+          </div>
+          <div className="flex items-center text-emerald-100/70">
             Feito com <Heart size={12} className="mx-1 text-emerald-500 fill-emerald-500" /> preservando a vida.
           </div>
         </div>

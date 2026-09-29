@@ -31,6 +31,54 @@
 }
 </script>
 
+    <meta name="description" content="Green Emergências Médicas - Atendimento pré-hospitalar, ambulância UTI móvel e suporte básico em Limeira e região 24 horas. Agendamento e remoções seguras." />
+    <meta name="keywords" content="ambulância particular Limeira, ambulância UTI Limeira, remoção médica Limeira, área protegida empresas, cobertura de eventos médica" />
+    <link rel="canonical" href="https://greenemergencias.com.br" />
+
+    <!-- ================================================================= -->
+    <!-- GOOGLE ADS & ANALYTICS TAG (gtag.js)                               -->
+    <!-- Substitua 'AW-SEU_ID_GOOGLE_ADS' pelo seu ID de conversão real     -->
+    <!-- (Exemplo: AW-1234567890) obtido no painel do Google Ads           -->
+    <!-- ================================================================= -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-SEU_ID_GOOGLE_ADS"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      // ID DO GOOGLE ADS: Altere aqui quando criar sua conta de anúncios:
+      var GOOGLE_ADS_ID = 'AW-SEU_ID_GOOGLE_ADS';
+      
+      if (GOOGLE_ADS_ID && GOOGLE_ADS_ID !== 'AW-SEU_ID_GOOGLE_ADS') {
+        gtag('config', GOOGLE_ADS_ID);
+      }
+
+      // Função de disparo manual ou automático de conversão
+      window.gtag_report_conversion = function(actionType) {
+        if (typeof gtag === 'function' && GOOGLE_ADS_ID !== 'AW-SEU_ID_GOOGLE_ADS') {
+          gtag('event', 'conversion', {
+            'send_to': GOOGLE_ADS_ID,
+            'event_category': 'Contato Google Ads',
+            'event_label': actionType
+          });
+          console.log('[Google Ads] Evento de conversão registrado:', actionType);
+        }
+      };
+
+      // Rastreamento Automático: Detecta cliques em links de WhatsApp e Telefone no site todo
+      document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('click', function(e) {
+          var link = e.target.closest('a');
+          if (!link) return;
+          var href = link.getAttribute('href') || '';
+          if (href.indexOf('wa.me') !== -1) {
+            window.gtag_report_conversion('whatsapp_click');
+          } else if (href.indexOf('tel:') !== -1) {
+            window.gtag_report_conversion('phone_call_click');
+          }
+        });
+      });
+    </script>
 </head>
   <body class="bg-white text-emerald-950 scroll-smooth">
     <div id="root"></div>
