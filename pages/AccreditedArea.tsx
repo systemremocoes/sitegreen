@@ -180,9 +180,16 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
       cpf: session?.credenciado.cnpj || '',
       observations: `[CREDENCIADO: ${session?.credenciado.name} | CNPJ/CPF: ${session?.credenciado.cnpj}] ${observations.trim()}`,
       serviceType,
-      source: 'portal_credenciado'
+      source: 'portal_credenciado',
+      credenciadoToken: session?.token
     });
     setSubmitting(false);
+
+    if (result.status === 401) {
+      handleLogout();
+      setLoginError('Sua sessão expirou. Entre novamente para solicitar a remoção.');
+      return;
+    }
 
     if (result.success) {
       setCreatedProtocol(result.protocol);

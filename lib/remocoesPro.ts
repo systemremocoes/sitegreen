@@ -16,6 +16,7 @@ export interface QuotationPayload {
   source?: string;
   removalType?: string;
   cpf?: string;
+  credenciadoToken?: string;
 }
 
 export interface QuotationResult {
@@ -23,6 +24,7 @@ export interface QuotationResult {
   protocol: string;
   raw?: any;
   error?: string;
+  status?: number;
 }
 
 export interface TrackingTimelineItem {
@@ -294,7 +296,8 @@ export async function submitQuotationToRemocoesPro(data: QuotationPayload): Prom
     return {
       success: false,
       protocol: '',
-      error: err instanceof Error ? err.message : 'Falha na conexão com o sistema Remoções Pro.'
+      error: err instanceof Error ? err.message : 'Falha na conexão com o sistema Remoções Pro.',
+      status: err instanceof EdgeFunctionError ? err.status : undefined
     };
   }
 }
