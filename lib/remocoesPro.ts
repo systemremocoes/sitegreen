@@ -146,6 +146,76 @@ export function normalizeDigits(value: string): string {
   return value.replace(/\D/g, '');
 }
 
+const CREDENCIADO_SESSION_KEY = 'green_accredited_session';
+const CREDENCIADO_SESSION_TTL_MS = 8 * 60 * 60 * 1000;
+
+interface StoredCredenciadoSession extends CredenciadoLoginResult {
+  expiresAt: number;
+}
+
+export function saveCredenciadoSession(auth: CredenciadoLoginResult): void {
+  try {
+    const stored: StoredCredenciadoSession = { ...auth, expiresAt: Date.now() + CREDENCIADO_SESSION_TTL_MS };
+    localStorage.setItem(CREDENCIADO_SESSION_KEY, JSON.stringify(stored));
+  } catch {
+    // Ignore storage errors
+  }
+}
+
+export function loadCredenciadoSession(): CredenciadoLoginResult | null {
+  try {
+    const raw = localStorage.getItem(CREDENCIADO_SESSION_KEY);
+    if (!raw) return null;
+    const parsed: Partial<StoredCredenciadoSession> = JSON.parse(raw);
+    if (!parsed?.token || !parsed?.credenciado || !parsed.expiresAt || parsed.expiresAt < Date.now()) {
+      localStorage.removeItem(CREDENCIADO_SESSION_KEY);
+      return null;
+    }
+    return { token: parsed.token, credenciado: parsed.credenciado };
+  } catch {
+    clearCredenciadoSession();
+    return null;
+  }
+}
+
+export function clearCredenciadoSession(): void {
+  try {
+    localStorage.removeItem(CREDENCIADO_SESSION_KEY);
+  } catch {
+    // Ignore storage errors
+  }
+}
+
+export function maskSecret(value: string | null | undefined, visible = 3): string {
+  if (!value) return '—';
+  const v = String(value);
+  if (v.length <= visible) return '•'.repeat(v.length);
+  return `${'•'.repeat(Math.min(6, v.length - visible))}${v.slice(-visible)}`;
+}
+
+export function safeExternalUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
+  try {
+    const parsed = new URL(url, window.location.href);
+    return parsed.protocol === 'https:' ? parsed.href : null;
+  } catch {
+    return null;
+  }
+}
+
+function escapeHtml(value: string): string {
+  return value.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
+}
+
+export class EdgeFunctionError extends Error {
+  status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = 'EdgeFunctionError';
+    this.status = status;
+  }
+}
+
 async function callEdgeFunction<T = any>(slug: string, body: Record<string, any>, bearerToken?: string): Promise<T> {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json'
@@ -169,11 +239,11 @@ async function callEdgeFunction<T = any>(slug: string, body: Record<string, any>
   }
 
   if (!res.ok) {
-    throw new Error(json?.error || json?.message || `Erro HTTP ${res.status}`);
+    throw new EdgeFunctionError(json?.error || json?.message || `Erro HTTP ${res.status}`, res.status);
   }
 
   if (json?.error) {
-    throw new Error(json.error);
+    throw new EdgeFunctionError(json.error, res.status);
   }
 
   return json as T;
@@ -305,17 +375,23 @@ export async function openRemovalDocument(
   const res = await callEdgeFunction<any>(endpoint, body);
   const d = res?.data || res;
 
-  if (d?.boleto_pdf_url) {
-    window.open(d.boleto_pdf_url, '_blank');
+  const pdfUrl = safeExternalUrl(d?.boleto_pdf_url);
+  if (pdfUrl) {
+    window.open(pdfUrl, '_blank', 'noopener,noreferrer');
     return;
   }
 
   const htmlContent = d?.html || (typeof d === 'string' ? d : null);
   if (htmlContent) {
-    const fullHtml = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Documento - ${protocol}</title><style>body{font-family:system-ui,sans-serif;padding:24px;color:#0f172a;max-width:860px;margin:0 auto;}</style></head><body>${htmlContent}</body></html>`;
+    // O documento herda a origem do site (blob:), então a CSP abaixo impede qualquer script
+    // embutido no HTML vindo do servidor de rodar e acessar a sessão do usuário.
+    const csp =
+      "default-src 'none'; img-src https: data:; style-src 'unsafe-inline' https:; font-src https: data:; form-action 'none'; base-uri 'none'";
+    const fullHtml = `<!DOCTYPE html><html lang="pt-BR"><head><meta http-equiv="Content-Security-Policy" content="${csp}"><meta charset="UTF-8"><meta name="referrer" content="no-referrer"><title>Documento - ${escapeHtml(String(protocol))}</title><style>body{font-family:system-ui,sans-serif;padding:24px;color:#0f172a;max-width:860px;margin:0 auto;}</style></head><body>${htmlContent}</body></html>`;
     const blob = new Blob([fullHtml], { type: 'text/html;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     window.open(url, '_blank');
+    setTimeout(() => URL.revokeObjectURL(url), 60_000);
     return;
   }
 

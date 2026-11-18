@@ -30,14 +30,18 @@ import {
   fetchCredenciadoBoletos,
   CredenciadoLoginResult,
   CredenciadoBoletosResponse,
-  NormalizedTracking
+  NormalizedTracking,
+  saveCredenciadoSession,
+  loadCredenciadoSession,
+  clearCredenciadoSession,
+  maskSecret,
+  safeExternalUrl,
+  EdgeFunctionError
 } from '../lib/remocoesPro';
 
 interface AccreditedAreaProps {
   onNavigate: (page: Page) => void;
 }
-
-const SESSION_KEY = 'green_accredited_session';
 
 function formatBRL(value: number | null | undefined): string {
   return (Number(value) || 0).toLocaleString('pt-BR', {
@@ -91,20 +95,15 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
   const [searching, setSearching] = useState(false);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(SESSION_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed?.token && parsed?.credenciado) {
-          setSession(parsed);
-        } else {
-          localStorage.removeItem(SESSION_KEY);
-        }
-      }
-    } catch {
-      localStorage.removeItem(SESSION_KEY);
-    }
+    const stored = loadCredenciadoSession();
+    if (stored) setSession(stored);
     setProtocols(getAccreditedProtocols());
+  }, []);
+
+  const handleLogout = useCallback(() => {
+    clearCredenciadoSession();
+    setSession(null);
+    setBoletosData(null);
   }, []);
 
   const loadBoletos = useCallback(
@@ -115,12 +114,17 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
         const res = await fetchCredenciadoBoletos(token, status);
         setBoletosData(res);
       } catch (err: any) {
+        if (err instanceof EdgeFunctionError && (err.status === 401 || err.status === 403)) {
+          handleLogout();
+          setLoginError('Sua sessão expirou. Entre novamente.');
+          return;
+        }
         setBoletosError(err?.message || 'Não foi possível carregar boletos e faturas.');
       } finally {
         setBoletosLoading(false);
       }
     },
-    []
+    [handleLogout]
   );
 
   useEffect(() => {
@@ -140,19 +144,14 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
     setLoginLoading(true);
     try {
       const auth = await credenciadoLogin(docInput.trim(), contractInput.trim());
-      localStorage.setItem(SESSION_KEY, JSON.stringify(auth));
+      saveCredenciadoSession(auth);
       setSession(auth);
+      setContractInput('');
     } catch (err: any) {
       setLoginError(err?.message || 'Credenciais inválidas ou contrato inativo.');
     } finally {
       setLoginLoading(false);
     }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem(SESSION_KEY);
-    setSession(null);
-    setBoletosData(null);
   };
 
   const handleCopy = (id: string, text: string) => {
@@ -179,7 +178,7 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
       contactPhone: contactPhone.trim(),
       email: session?.credenciado.email || '',
       cpf: session?.credenciado.cnpj || '',
-      observations: `[CREDENCIADO CONTRATO: ${session?.credenciado.contractCode} | CNPJ/CPF: ${session?.credenciado.cnpj}] ${observations.trim()}`,
+      observations: `[CREDENCIADO: ${session?.credenciado.name} | CNPJ/CPF: ${session?.credenciado.cnpj}] ${observations.trim()}`,
       serviceType,
       source: 'portal_credenciado'
     });
@@ -195,7 +194,7 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
       setObservations('');
     } else {
       const msg = encodeURIComponent(
-        `*Solicitação Credenciado (${session?.credenciado.contractCode})*\n\n*Paciente:* ${patientName}\n*Telefone:* ${contactPhone}\n*Origem:* ${origin}\n*Destino:* ${destination}\n*Tipo:* ${serviceType}`
+        `*Solicitação Credenciado (${session?.credenciado.name} - ${session?.credenciado.cnpj})*\n\n*Paciente:* ${patientName}\n*Telefone:* ${contactPhone}\n*Origem:* ${origin}\n*Destino:* ${destination}\n*Tipo:* ${serviceType}`
       );
       window.open(`https://wa.me/5519998049901?text=${msg}`, '_blank');
     }
@@ -310,7 +309,7 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
                 <span className="px-2.5 py-0.5 bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 rounded-full text-[11px] font-bold uppercase tracking-wider">
                   {cred.status}
                 </span>
-                <span className="text-xs text-emerald-200/80 font-mono">Contrato: {cred.contractCode}</span>
+                <span className="text-xs text-emerald-200/80 font-mono">Contrato: {maskSecret(cred.contractCode)}</span>
               </div>
               <h1 className="text-xl md:text-2xl font-extrabold mt-1">{cred.name}</h1>
               <p className="text-xs text-emerald-100/75">
@@ -398,7 +397,7 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
                   </p>
                   <h3 className="text-xl font-bold mb-1">{cred.name}</h3>
                   <p className="text-xs md:text-sm text-emerald-100/80">
-                    Contrato: {cred.contractCode} • CNPJ/CPF: {cred.cnpj}
+                    Contrato: {maskSecret(cred.contractCode)} • CNPJ/CPF: {cred.cnpj}
                   </p>
                 </div>
                 <button
@@ -502,9 +501,9 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
                                 <span>{copiedId === `pix-${boleto.id}` ? 'PIX Copiado!' : 'Copiar PIX'}</span>
                               </button>
                             )}
-                            {boleto.pdf_url && (
+                            {safeExternalUrl(boleto.pdf_url) && (
                               <a
-                                href={boleto.pdf_url}
+                                href={safeExternalUrl(boleto.pdf_url)!}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="px-3.5 py-2 rounded-xl bg-[#0a2619] hover:bg-emerald-900 text-white font-bold text-xs flex items-center gap-1.5"
@@ -555,9 +554,9 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
                                 <span>{copiedId === `inv-lin-${inv.id}` ? 'Copiado!' : 'Linha Digitável'}</span>
                               </button>
                             )}
-                            {inv.boleto_pdf_url && (
+                            {safeExternalUrl(inv.boleto_pdf_url) && (
                               <a
-                                href={inv.boleto_pdf_url}
+                                href={safeExternalUrl(inv.boleto_pdf_url)!}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="px-3.5 py-2 rounded-xl bg-[#0a2619] text-white font-bold text-xs flex items-center gap-1.5"
@@ -566,9 +565,9 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
                                 <span>Boleto PDF</span>
                               </a>
                             )}
-                            {inv.nfse_pdf_url && (
+                            {safeExternalUrl(inv.nfse_pdf_url) && (
                               <a
-                                href={inv.nfse_pdf_url}
+                                href={safeExternalUrl(inv.nfse_pdf_url)!}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-[#0a2619] font-bold text-xs flex items-center gap-1.5"

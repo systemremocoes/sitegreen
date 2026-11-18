@@ -13,14 +13,12 @@ import {
   KeyRound
 } from 'lucide-react';
 import { Page } from '../App';
-import { normalizeDigits, credenciadoLogin } from '../lib/remocoesPro';
+import { normalizeDigits, credenciadoLogin, saveCredenciadoSession } from '../lib/remocoesPro';
 
 interface ClientPortalProps {
   onNavigate: (page: Page) => void;
   onSelectRemovalLookup: (protocol: string, verifier: string) => void;
 }
-
-const SESSION_KEY = 'green_accredited_session';
 
 const ClientPortal: React.FC<ClientPortalProps> = ({ onNavigate, onSelectRemovalLookup }) => {
   // Card 1: Remoções Avulsas (Protocolo + Telefone/CPF)
@@ -60,7 +58,7 @@ const ClientPortal: React.FC<ClientPortalProps> = ({ onNavigate, onSelectRemoval
     setLoginLoading(true);
     try {
       const auth = await credenciadoLogin(docInput.trim(), contractInput.trim());
-      localStorage.setItem(SESSION_KEY, JSON.stringify(auth));
+      saveCredenciadoSession(auth);
       onNavigate('accredited-area');
     } catch (err: any) {
       setLoginError(err?.message || 'Credenciais inválidas ou contrato inativo.');
