@@ -1,16 +1,13 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   ArrowLeft,
   CheckCircle2,
-  Stethoscope,
-  Ambulance,
-  Users,
   ShieldAlert,
-  Clock,
-  Calendar
+  Clock
 } from 'lucide-react';
 import { Page } from '../App';
+import { submitQuotationToRemocoesPro } from '../lib/remocoesPro';
 
 interface ServiceDetailProps {
   serviceId: string;
@@ -112,6 +109,43 @@ const servicesData: Record<string, any> = {
 
 const ServiceDetail: React.FC<ServiceDetailProps> = ({ serviceId, onNavigate }) => {
   const service = servicesData[serviceId] || servicesData['uti'];
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [protocol, setProtocol] = useState<string | null>(null);
+
+  const handleQuickQuote = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim() || !phone.trim()) {
+      alert('Por favor, preencha seu nome e telefone.');
+      return;
+    }
+
+    setLoading(true);
+    const result = await submitQuotationToRemocoesPro({
+      origin: `Solicitação via Página: ${service.title}`,
+      destination: service.title,
+      date: new Date().toISOString().split('T')[0],
+      time: new Date().toTimeString().slice(0, 5),
+      patientName: name.trim(),
+      patientAge: '',
+      contactPhone: phone.trim(),
+      email: '',
+      observations: `Orçamento Rápido solicitado na página de serviço: ${service.title}`,
+      serviceType: serviceId,
+      source: `service_detail_${serviceId}`
+    });
+    setLoading(false);
+
+    if (result.success) {
+      setProtocol(result.protocol);
+      setName('');
+      setPhone('');
+    } else {
+      const msg = encodeURIComponent(`*Orçamento Rápido - ${service.title}*\n\n*Nome:* ${name}\n*Telefone:* ${phone}`);
+      window.open(`https://wa.me/5519998049901?text=${msg}`, '_blank');
+    }
+  };
 
   return (
     <div className="pt-32 pb-24 bg-white">
@@ -175,22 +209,49 @@ const ServiceDetail: React.FC<ServiceDetailProps> = ({ serviceId, onNavigate }) 
             <div className="sticky top-32 space-y-8">
               <div className="bg-[#0a2619] text-white p-8 rounded-[2rem] shadow-2xl">
                 <h3 className="text-2xl font-bold mb-6">Orçamento Rápido</h3>
-                <p className="text-emerald-100/60 mb-8 text-sm font-medium">Preencha e nossa central entrará em contato em poucos minutos.</p>
-                <form className="space-y-4">
-                  <input
-                    type="text"
-                    placeholder="Seu Nome"
-                    className="w-full bg-white/10 border border-white/20 rounded-xl px-5 py-4 text-white placeholder:text-white/40 outline-none focus:border-emerald-500 transition-all"
-                  />
-                  <input
-                    type="tel"
-                    placeholder="WhatsApp"
-                    className="w-full bg-white/10 border border-white/20 rounded-xl px-5 py-4 text-white placeholder:text-white/40 outline-none focus:border-emerald-500 transition-all"
-                  />
-                  <button className="w-full bg-emerald-500 hover:bg-emerald-400 text-white font-bold py-5 rounded-xl transition-all shadow-xl shadow-emerald-500/20 active:scale-95">
-                    Solicitar Agora
-                  </button>
-                </form>
+                <p className="text-emerald-100/60 mb-8 text-sm font-medium">Preencha e nossa central no Remoções Pro receberá seu pedido em segundos.</p>
+
+                {protocol ? (
+                  <div className="bg-emerald-900/50 border border-emerald-500/30 rounded-2xl p-6 text-center space-y-4">
+                    <CheckCircle2 size={36} className="text-emerald-400 mx-auto" />
+                    <h4 className="font-bold text-lg">Solicitação Enviada!</h4>
+                    <p className="text-xs text-emerald-100/70">Protocolo: <span className="font-mono font-bold text-emerald-300">{protocol.split('-')[0].toUpperCase()}</span></p>
+                    <button
+                      type="button"
+                      onClick={() => setProtocol(null)}
+                      className="w-full bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-xl text-sm transition-colors"
+                    >
+                      Solicitar Outro
+                    </button>
+                  </div>
+                ) : (
+                  <form onSubmit={handleQuickQuote} className="space-y-4">
+                    <input
+                      type="text"
+                      required
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Seu Nome"
+                      className="w-full bg-white/10 border border-white/20 rounded-xl px-5 py-4 text-white placeholder:text-white/40 outline-none focus:border-emerald-500 transition-all"
+                    />
+                    <input
+                      type="tel"
+                      required
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="Seu Telefone / WhatsApp"
+                      className="w-full bg-white/10 border border-white/20 rounded-xl px-5 py-4 text-white placeholder:text-white/40 outline-none focus:border-emerald-500 transition-all"
+                    />
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="w-full bg-emerald-500 hover:bg-emerald-400 text-white font-bold py-5 rounded-xl transition-all shadow-xl shadow-emerald-500/20 active:scale-95 disabled:opacity-50"
+                    >
+                      {loading ? 'Enviando...' : 'Solicitar Agora'}
+                    </button>
+                  </form>
+                )}
+
                 <div className="mt-8 pt-8 border-t border-white/10 text-center">
                   <p className="text-xs font-black uppercase tracking-widest text-emerald-400 mb-2">Emergência? Ligue agora</p>
                   <a href="tel:1937923947" className="text-xl font-black hover:text-emerald-400 transition-colors">(19) 3792-3947</a>

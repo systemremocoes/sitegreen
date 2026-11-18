@@ -49,15 +49,15 @@ const Partners: React.FC = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center space-x-2 text-emerald-600 font-bold uppercase tracking-widest text-xs mb-4">
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center space-x-2 text-emerald-700 font-bold uppercase tracking-wider text-xs mb-3">
             <span className="w-8 h-px bg-emerald-600"></span>
             <span>Credibilidade no Atendimento</span>
           </div>
-          <h3 className="text-3xl md:text-5xl font-extrabold text-[#0a2619] mb-6">
+          <h3 className="text-2xl md:text-3xl font-extrabold text-[#0a2619] mb-3">
             Convênios Aceitos
           </h3>
-          <p className="text-emerald-900/60 max-w-2xl mx-auto text-lg font-medium">
+          <p className="text-slate-600 max-w-2xl mx-auto text-sm md:text-base">
             Atendemos as principais operadoras de saúde do mercado com agilidade total.
           </p>
         </div>
@@ -106,12 +106,10 @@ const Partners: React.FC = () => {
           <span className="text-emerald-950 font-bold">Dúvidas se atendemos seu plano?</span>
           <div className="flex items-center gap-4">
             <a 
-              href="https://wa.me/5519998049901?text=Ol%C3%A1!%20Gostaria%20de%20verificar%20se%20a%20Green%20atende%20o%20meu%20plano%20ou%20conv%C3%AAnio." 
-              target="_blank" 
-              rel="noopener noreferrer"
+              href="tel:1937923947" 
               className="px-6 py-2.5 bg-emerald-600 text-white rounded-xl font-black text-sm hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/20"
             >
-              Validar Plano Agora
+              Ligar: (19) 3792-3947
             </a>
           </div>
         </div>

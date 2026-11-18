@@ -1,30 +1,32 @@
-
 import React, { useState, useRef, useEffect } from 'react';
-import { Phone, Menu, X, Activity, ChevronDown } from 'lucide-react';
+import { MessageCircle, Menu, X, Activity, ChevronDown, CalendarPlus, Sparkles, UserCheck } from 'lucide-react';
 import { Page } from '../App';
 
 interface NavbarProps {
   scrolled: boolean;
   navigate: (page: Page, serviceId?: string) => void;
   currentPage: Page;
+  onOpenQuickModal?: () => void;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ scrolled, navigate, currentPage }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isServicesOpen, setIsServicesOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+const WHATSAPP_URL =
+  'https://wa.me/5519998049901?text=Ol%C3%A1!%20Encontrei%20a%20Green%20no%20Google%20e%20gostaria%20de%20um%20or%C3%A7amento%20de%20ambul%C3%A2ncia.';
 
-  const servicesList = [
-    { name: 'Ambulância UTI', id: 'uti' },
-    { name: 'Remoções Médicas', id: 'remocoes' },
-    { name: 'Área Protegida', id: 'area-protegida' },
-    { name: 'Cobertura de Eventos', id: 'eventos' },
+const Navbar: React.FC<NavbarProps> = ({ scrolled, navigate, onOpenQuickModal }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<'services' | 'request' | null>(null);
+  const navRef = useRef<HTMLDivElement>(null);
+
+  const servicesList: Array<{ name: string; page: Page; id?: string; desc: string }> = [
+    { name: 'Ambulâncias', page: 'ambulances', desc: 'Tipos de ambulâncias e remoções' },
+    { name: 'Área Protegida', page: 'service-detail', id: 'area-protegida', desc: 'Para empresas e condomínios' },
+    { name: 'Cobertura de Eventos', page: 'service-detail', id: 'eventos', desc: 'Posto médico e ambulâncias' },
   ];
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsServicesOpen(false);
+      if (navRef.current && !navRef.current.contains(event.target as Node)) {
+        setOpenDropdown(null);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -34,91 +36,160 @@ const Navbar: React.FC<NavbarProps> = ({ scrolled, navigate, currentPage }) => {
   const handleLinkClick = (page: Page, serviceId?: string) => {
     navigate(page, serviceId);
     setIsOpen(false);
-    setIsServicesOpen(false);
+    setOpenDropdown(null);
   };
 
   return (
     <nav
-      className={`fixed w-full z-50 transition-all duration-300 ${scrolled ? 'bg-white/95 backdrop-blur-md shadow-lg py-3' : 'bg-transparent py-5'
-        }`}
+      ref={navRef}
+      className={`fixed w-full z-50 transition-all duration-300 ${
+        scrolled ? 'bg-white/95 backdrop-blur-md shadow-md py-3' : 'bg-white/85 backdrop-blur-sm py-4'
+      }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center">
           <div className="flex items-center">
             <button onClick={() => handleLinkClick('home')} className="flex items-center space-x-2 group">
-              <div className="relative w-10 h-10 bg-[#0a2619] rounded-lg flex items-center justify-center text-white group-hover:bg-emerald-800 transition-all transform group-hover:scale-110">
-                <Activity size={24} className="animate-pulse text-emerald-400" />
+              <div className="relative w-9 h-9 bg-[#0a2619] rounded-lg flex items-center justify-center text-white group-hover:bg-emerald-800 transition-all">
+                <Activity size={20} className="text-emerald-400" />
               </div>
-              <span className={`text-2xl font-black tracking-tighter text-[#0a2619]`}>
-                GREEN<span className="text-emerald-500">EMERGÊNCIAS</span>
+              <span className="text-xl font-black tracking-tight text-[#0a2619]">
+                GREEN<span className="text-emerald-600">EMERGÊNCIAS</span>
               </span>
             </button>
           </div>
 
           {/* Desktop Menu */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden lg:flex items-center space-x-6">
             <button
               onClick={() => handleLinkClick('home')}
-              className={`text-base font-black transition-colors hover:text-emerald-500 text-emerald-950`}
+              className="text-sm font-bold transition-colors hover:text-emerald-600 text-emerald-950"
             >
               Início
             </button>
 
-            <div className="relative" ref={dropdownRef}>
+            {/* Dropdown: Serviços */}
+            <div
+              className="relative"
+              onMouseEnter={() => setOpenDropdown('services')}
+              onMouseLeave={() => setOpenDropdown(null)}
+            >
               <button
-                onMouseEnter={() => setIsServicesOpen(true)}
-                className={`flex items-center space-x-1 text-base font-black transition-colors hover:text-emerald-500 text-emerald-950`}
+                onClick={() => setOpenDropdown(openDropdown === 'services' ? null : 'services')}
+                className="flex items-center space-x-1 text-sm font-bold transition-colors hover:text-emerald-600 text-emerald-950 py-2"
               >
                 <span>Serviços</span>
-                <ChevronDown size={16} className={`transition-transform duration-200 ${isServicesOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown size={15} className={`transition-transform duration-200 ${openDropdown === 'services' ? 'rotate-180' : ''}`} />
               </button>
 
               <div
-                onMouseLeave={() => setIsServicesOpen(false)}
-                className={`absolute top-full left-0 mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-emerald-50 py-3 transition-all duration-200 origin-top-left ${isServicesOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'
-                  }`}
+                className={`absolute top-full left-0 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 transition-all duration-200 origin-top-left ${
+                  openDropdown === 'services' ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'
+                }`}
               >
                 {servicesList.map((service) => (
                   <button
-                    key={service.id}
-                    onClick={() => handleLinkClick('service-detail', service.id)}
-                    className="w-full text-left px-6 py-3 text-sm font-bold text-emerald-950 hover:bg-emerald-50 hover:text-emerald-600 transition-colors"
+                    key={service.name}
+                    onClick={() => handleLinkClick(service.page, service.id)}
+                    className="w-full text-left px-5 py-3 hover:bg-emerald-50 transition-colors block"
                   >
-                    {service.name}
+                    <p className="text-sm font-bold text-[#0a2619]">{service.name}</p>
+                    <p className="text-xs text-slate-500">{service.desc}</p>
                   </button>
                 ))}
               </div>
             </div>
 
+            {/* Dropdown: Solicitar Remoção */}
+            <div
+              className="relative"
+              onMouseEnter={() => setOpenDropdown('request')}
+              onMouseLeave={() => setOpenDropdown(null)}
+            >
+              <button
+                onClick={() => setOpenDropdown(openDropdown === 'request' ? null : 'request')}
+                className="flex items-center space-x-1 text-sm font-bold transition-colors hover:text-emerald-600 text-emerald-950 py-2"
+              >
+                <span>Solicitar Remoção</span>
+                <ChevronDown size={15} className={`transition-transform duration-200 ${openDropdown === 'request' ? 'rotate-180' : ''}`} />
+              </button>
+
+              <div
+                className={`absolute top-full left-0 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 transition-all duration-200 origin-top-left ${
+                  openDropdown === 'request' ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'
+                }`}
+              >
+                <button
+                  onClick={() => handleLinkClick('schedule')}
+                  className="w-full text-left px-5 py-3 hover:bg-emerald-50 transition-colors flex items-start gap-3"
+                >
+                  <CalendarPlus size={18} className="text-emerald-600 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-bold text-[#0a2619]">Agendar Remoção</p>
+                    <p className="text-xs text-slate-500">Formulário completo</p>
+                  </div>
+                </button>
+
+                {onOpenQuickModal && (
+                  <button
+                    onClick={() => {
+                      setOpenDropdown(null);
+                      onOpenQuickModal();
+                    }}
+                    className="w-full text-left px-5 py-3 hover:bg-emerald-50 transition-colors flex items-start gap-3"
+                  >
+                    <Activity size={18} className="text-emerald-600 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-bold text-[#0a2619]">Orçamento Rápido</p>
+                      <p className="text-xs text-slate-500">Solicitação expressa</p>
+                    </div>
+                  </button>
+                )}
+
+                <button
+                  onClick={() => handleLinkClick('plans')}
+                  className="w-full text-left px-5 py-3 hover:bg-emerald-50 transition-colors flex items-start gap-3 border-t border-slate-100"
+                >
+                  <Sparkles size={18} className="text-emerald-600 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-bold text-[#0a2619]">Assinar Plano Mensal</p>
+                    <p className="text-xs text-slate-500">Cobertura contínua 24h</p>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            {/* Área do Cliente (botão direto que abre os 2 cards de login) */}
+            <button
+              onClick={() => handleLinkClick('client-portal')}
+              className="flex items-center space-x-1.5 text-sm font-bold transition-colors hover:text-emerald-600 text-emerald-950"
+            >
+              <UserCheck size={16} className="text-emerald-600" />
+              <span>Área do Cliente</span>
+            </button>
+
             <button
               onClick={() => handleLinkClick('about')}
-              className={`text-base font-black transition-colors hover:text-emerald-500 text-emerald-950`}
+              className="text-sm font-bold transition-colors hover:text-emerald-600 text-emerald-950"
             >
               Sobre Nós
             </button>
 
-            <button
-              onClick={() => handleLinkClick('schedule')}
-              className={`text-base font-black transition-colors hover:text-emerald-500 text-emerald-950 mr-4`}
-            >
-              Agendar Online
-            </button>
-
+            {/* Cabeçalho: somente número do WhatsApp */}
             <a
-              href="tel:1937923947"
-              className="flex items-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-2xl text-sm font-extrabold transition-all transform hover:scale-105 active:scale-95 shadow-xl shadow-emerald-600/30"
+              href={WHATSAPP_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center space-x-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-md shadow-emerald-600/20"
             >
-              <Phone size={16} />
-              <span>(19) 3792-3947</span>
+              <MessageCircle size={17} />
+              <span>(19) 99804-9901</span>
             </a>
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden flex items-center">
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="text-[#0a2619] p-2"
-            >
+          <div className="lg:hidden flex items-center">
+            <button onClick={() => setIsOpen(!isOpen)} className="text-[#0a2619] p-2" aria-label="Menu">
               {isOpen ? <X size={28} /> : <Menu size={28} />}
             </button>
           </div>
@@ -127,20 +198,65 @@ const Navbar: React.FC<NavbarProps> = ({ scrolled, navigate, currentPage }) => {
 
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="md:hidden bg-white border-b border-emerald-100 absolute w-full left-0 shadow-2xl">
-          <div className="px-4 pt-2 pb-6 space-y-1">
-            <button onClick={() => handleLinkClick('home')} className="block w-full text-left px-3 py-4 text-base font-black text-emerald-950">Início</button>
-            <div className="pl-3 py-2 space-y-3">
-              <p className="text-xs font-black text-emerald-400 uppercase tracking-widest">Nossos Serviços</p>
+        <div className="lg:hidden bg-white border-b border-slate-200 absolute w-full left-0 shadow-2xl max-h-[85vh] overflow-y-auto">
+          <div className="px-4 pt-2 pb-6 space-y-2">
+            <button onClick={() => handleLinkClick('home')} className="block w-full text-left px-3 py-3 text-base font-bold text-[#0a2619]">
+              Início
+            </button>
+
+            <div className="pl-3 py-2 space-y-2 border-t border-slate-100">
+              <p className="text-xs font-bold text-emerald-700 uppercase tracking-wider">Serviços</p>
               {servicesList.map((service) => (
-                <button key={service.id} onClick={() => handleLinkClick('service-detail', service.id)} className="block w-full text-left text-emerald-900 font-bold">{service.name}</button>
+                <button
+                  key={service.name}
+                  onClick={() => handleLinkClick(service.page, service.id)}
+                  className="block w-full text-left text-[#0a2619] font-semibold text-sm py-1"
+                >
+                  {service.name}
+                </button>
               ))}
             </div>
-            <button onClick={() => handleLinkClick('about')} className="block w-full text-left px-3 py-4 text-base font-black text-emerald-950">Sobre Nós</button>
-            <button onClick={() => handleLinkClick('schedule')} className="block w-full text-left px-3 py-4 text-base font-black text-emerald-950">Agendar Online</button>
-            <a href="tel:1937923947" className="flex items-center justify-center space-x-2 bg-emerald-600 text-white px-3 py-4 rounded-xl font-extrabold mt-4 shadow-lg">
-              <Phone size={18} />
-              <span>(19) 3792-3947</span>
+
+            <div className="pl-3 py-2 space-y-2 border-t border-slate-100">
+              <p className="text-xs font-bold text-emerald-700 uppercase tracking-wider">Solicitar Remoção</p>
+              <button onClick={() => handleLinkClick('schedule')} className="block w-full text-left text-[#0a2619] font-semibold text-sm py-1">
+                Agendar Remoção
+              </button>
+              {onOpenQuickModal && (
+                <button
+                  onClick={() => {
+                    setIsOpen(false);
+                    onOpenQuickModal();
+                  }}
+                  className="block w-full text-left text-[#0a2619] font-semibold text-sm py-1"
+                >
+                  Orçamento Rápido
+                </button>
+              )}
+              <button onClick={() => handleLinkClick('plans')} className="block w-full text-left text-[#0a2619] font-semibold text-sm py-1">
+                Assinar Plano Mensal
+              </button>
+            </div>
+
+            <button
+              onClick={() => handleLinkClick('client-portal')}
+              className="block w-full text-left px-3 py-3 text-base font-bold text-emerald-700 border-t border-slate-100"
+            >
+              Área do Cliente
+            </button>
+
+            <button onClick={() => handleLinkClick('about')} className="block w-full text-left px-3 py-3 text-base font-bold text-[#0a2619] border-t border-slate-100">
+              Sobre Nós
+            </button>
+
+            <a
+              href={WHATSAPP_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center space-x-2 bg-emerald-600 text-white px-3 py-3.5 rounded-xl font-bold text-sm mt-4 shadow-md"
+            >
+              <MessageCircle size={18} />
+              <span>WhatsApp: (19) 99804-9901</span>
             </a>
           </div>
         </div>

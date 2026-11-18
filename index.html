@@ -1,87 +1,155 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Green Emergências - Atendimento Médico 24h</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <style>
-      body {
-        font-family: 'Poppins', sans-serif;
-      }
-      h1, h2, h3, h4, .font-display {
-        font-family: 'Montserrat', sans-serif;
-      }
-      .scroll-smooth {
-        scroll-behavior: smooth;
-      }
-    </style>
-  <script type="importmap">
-{
-  "imports": {
-    "react": "https://esm.sh/react@^19.2.3",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "react/": "https://esm.sh/react@^19.2.3/",
-    "lucide-react": "https://esm.sh/lucide-react@^0.563.0"
-  }
-}
-</script>
 
-    <meta name="description" content="Green Emergências Médicas - Atendimento pré-hospitalar, ambulância UTI móvel e suporte básico em Limeira e região 24 horas. Agendamento e remoções seguras." />
-    <meta name="keywords" content="ambulância particular Limeira, ambulância UTI Limeira, remoção médica Limeira, área protegida empresas, cobertura de eventos médica" />
-    <link rel="canonical" href="https://greenemergencias.com.br" />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Green Emergências - Atendimento Médico 24h</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Poppins:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+    }
 
-    <!-- ================================================================= -->
-    <!-- GOOGLE ADS & ANALYTICS TAG (gtag.js)                               -->
-    <!-- Substitua 'AW-SEU_ID_GOOGLE_ADS' pelo seu ID de conversão real     -->
-    <!-- (Exemplo: AW-1234567890) obtido no painel do Google Ads           -->
-    <!-- ================================================================= -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-SEU_ID_GOOGLE_ADS"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
+    h1,
+    h2,
+    h3,
+    h4,
+    .font-display {
+      font-family: 'Montserrat', sans-serif;
+    }
 
-      // ID DO GOOGLE ADS: Altere aqui quando criar sua conta de anúncios:
-      var GOOGLE_ADS_ID = 'AW-SEU_ID_GOOGLE_ADS';
-      
-      if (GOOGLE_ADS_ID && GOOGLE_ADS_ID !== 'AW-SEU_ID_GOOGLE_ADS') {
-        gtag('config', GOOGLE_ADS_ID);
+    .scroll-smooth {
+      scroll-behavior: smooth;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
       }
 
-      // Função de disparo manual ou automático de conversão
-      window.gtag_report_conversion = function(actionType) {
-        if (typeof gtag === 'function' && GOOGLE_ADS_ID !== 'AW-SEU_ID_GOOGLE_ADS') {
-          gtag('event', 'conversion', {
-            'send_to': GOOGLE_ADS_ID,
-            'event_category': 'Contato Google Ads',
-            'event_label': actionType
-          });
-          console.log('[Google Ads] Evento de conversão registrado:', actionType);
-        }
-      };
+      to {
+        opacity: 1;
+      }
+    }
 
-      // Rastreamento Automático: Detecta cliques em links de WhatsApp e Telefone no site todo
-      document.addEventListener('DOMContentLoaded', function() {
-        document.addEventListener('click', function(e) {
-          var link = e.target.closest('a');
-          if (!link) return;
-          var href = link.getAttribute('href') || '';
-          if (href.indexOf('wa.me') !== -1) {
-            window.gtag_report_conversion('whatsapp_click');
-          } else if (href.indexOf('tel:') !== -1) {
-            window.gtag_report_conversion('phone_call_click');
-          }
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(16px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes scaleIn {
+      from {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    @keyframes shake {
+
+      0%,
+      100% {
+        transform: translateX(0);
+      }
+
+      25% {
+        transform: translateX(-5px);
+      }
+
+      75% {
+        transform: translateX(5px);
+      }
+    }
+
+    .animate-fadeIn {
+      animation: fadeIn 0.35s ease-out forwards;
+    }
+
+    .animate-slideUp {
+      animation: slideUp 0.4s ease-out forwards;
+    }
+
+    .animate-scaleIn {
+      animation: scaleIn 0.3s ease-out forwards;
+    }
+
+    .animate-shake {
+      animation: shake 0.35s ease-in-out;
+    }
+  </style>
+
+  <meta name="description"
+    content="Green Emergências Médicas - Atendimento pré-hospitalar, ambulância UTI móvel e suporte básico em Limeira e região 24 horas. Agendamento e remoções seguras." />
+  <meta name="keywords"
+    content="ambulância particular Limeira, ambulância UTI Limeira, remoção médica Limeira, área protegida empresas, cobertura de eventos médica" />
+  <link rel="canonical" href="https://greenemergencias.com.br" />
+
+  <!-- ================================================================= -->
+  <!-- GOOGLE ADS & ANALYTICS TAG (gtag.js)                               -->
+  <!-- Substitua 'AW-SEU_ID_GOOGLE_ADS' pelo seu ID de conversão real     -->
+  <!-- (Exemplo: AW-1234567890) obtido no painel do Google Ads           -->
+  <!-- ================================================================= -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=AW-SEU_ID_GOOGLE_ADS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+
+    // ID DO GOOGLE ADS: Altere aqui quando criar sua conta de anúncios:
+    var GOOGLE_ADS_ID = 'AW-SEU_ID_GOOGLE_ADS';
+
+    if (GOOGLE_ADS_ID && GOOGLE_ADS_ID !== 'AW-SEU_ID_GOOGLE_ADS') {
+      gtag('config', GOOGLE_ADS_ID);
+    }
+
+    // Função de disparo manual ou automático de conversão
+    window.gtag_report_conversion = function (actionType) {
+      if (typeof gtag === 'function' && GOOGLE_ADS_ID !== 'AW-SEU_ID_GOOGLE_ADS') {
+        gtag('event', 'conversion', {
+          'send_to': GOOGLE_ADS_ID,
+          'event_category': 'Contato Google Ads',
+          'event_label': actionType
         });
+        console.log('[Google Ads] Evento de conversão registrado:', actionType);
+      }
+    };
+
+    // Rastreamento Automático: Detecta cliques em links de WhatsApp e Telefone no site todo
+    document.addEventListener('DOMContentLoaded', function () {
+      document.addEventListener('click', function (e) {
+        var link = e.target.closest('a');
+        if (!link) return;
+        var href = link.getAttribute('href') || '';
+        if (href.indexOf('wa.me') !== -1) {
+          window.gtag_report_conversion('whatsapp_click');
+        } else if (href.indexOf('tel:') !== -1) {
+          window.gtag_report_conversion('phone_call_click');
+        }
       });
-    </script>
+    });
+  </script>
 </head>
-  <body class="bg-white text-emerald-950 scroll-smooth">
-    <div id="root"></div>
+
+<body class="bg-white text-emerald-950 scroll-smooth">
+  <div id="root"></div>
   <script type="module" src="/index.tsx"></script>
 </body>
+
 </html>

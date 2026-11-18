@@ -69,48 +69,56 @@ const services = [
 
 const Services: React.FC<ServicesProps> = ({ onNavigate }) => {
   return (
-    <div className="py-24 bg-[#f8fafc] relative overflow-hidden">
+    <div className="py-16 bg-[#f8fafc] relative overflow-hidden">
       <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-100/50 rounded-full blur-3xl -z-10 -mr-32 -mt-32"></div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-16 gap-8">
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-10 gap-4">
           <div className="max-w-2xl">
-            <div className="inline-flex items-center space-x-2 text-emerald-600 font-bold uppercase tracking-widest text-xs mb-4">
+            <div className="inline-flex items-center space-x-2 text-emerald-700 font-bold uppercase tracking-wider text-xs mb-2">
               <span className="w-8 h-px bg-emerald-600"></span>
               <span>Menu de Serviços</span>
             </div>
-            <h3 className="text-3xl md:text-5xl font-extrabold text-[#0a2619] mb-6 leading-tight">
-              Soluções Sob Medida <br /> para a <span className="text-emerald-500 underline decoration-emerald-200">Sua Saúde</span>
+            <h3 className="text-2xl md:text-3xl font-extrabold text-[#0a2619] leading-tight">
+              Soluções Sob Medida para a <span className="text-emerald-600">Sua Saúde</span>
             </h3>
           </div>
+          <button
+            onClick={() => onNavigate('ambulances')}
+            className="inline-flex items-center space-x-2 text-sm font-bold text-emerald-700 hover:text-emerald-900 transition-colors"
+          >
+            <span>Ver todos os tipos de ambulâncias e remoções</span>
+            <ArrowRight size={16} />
+          </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {services.map((service, index) => (
             <div
               key={index}
-              className="group bg-white rounded-[2rem] p-8 border border-emerald-100 shadow-xl shadow-emerald-900/5 hover:shadow-2xl hover:shadow-emerald-900/10 transition-all duration-500 flex flex-col relative overflow-hidden"
+              className="group bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-md hover:border-emerald-200 transition-all duration-300 flex flex-col relative"
             >
-              <div className="absolute top-6 right-6 px-3 py-1 bg-emerald-50 text-emerald-700 text-[10px] font-black uppercase tracking-widest rounded-full group-hover:bg-emerald-600 group-hover:text-white transition-colors">
-                {service.tag}
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                  {service.icon}
+                </div>
+                <span className="px-2.5 py-1 bg-emerald-50 text-emerald-800 text-xs font-semibold rounded-full">
+                  {service.tag}
+                </span>
               </div>
 
-              <div className="mb-8 w-14 h-14 bg-emerald-50 rounded-2xl flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white group-hover:rotate-6 transition-all duration-500">
-                {service.icon}
-              </div>
-
-              <h4 className="text-2xl font-bold text-emerald-950 mb-4 group-hover:text-emerald-600 transition-colors">
+              <h4 className="text-lg font-bold text-[#0a2619] mb-2 group-hover:text-emerald-700 transition-colors">
                 {service.title}
               </h4>
 
-              <p className="text-emerald-900/60 mb-8 flex-grow leading-relaxed font-medium text-sm">
+              <p className="text-slate-600 mb-5 flex-grow leading-relaxed text-sm">
                 {service.description}
               </p>
 
-              <div className="space-y-3 mb-10">
+              <div className="space-y-2 mb-5 pt-3 border-t border-slate-100">
                 {service.benefits.map((benefit, i) => (
-                  <div key={i} className="flex items-center text-xs text-emerald-950 font-bold">
-                    <CheckCircle2 size={14} className="text-emerald-500 mr-2 shrink-0" />
+                  <div key={i} className="flex items-center text-xs text-[#0a2619] font-medium">
+                    <CheckCircle2 size={14} className="text-emerald-600 mr-2 shrink-0" />
                     {benefit}
                   </div>
                 ))}
@@ -118,7 +126,7 @@ const Services: React.FC<ServicesProps> = ({ onNavigate }) => {
 
               <button
                 onClick={() => onNavigate('service-detail', service.id)}
-                className="w-full flex items-center justify-center space-x-2 bg-emerald-50 text-emerald-700 py-4 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-emerald-600 hover:text-white transition-all transform active:scale-95"
+                className="w-full flex items-center justify-center space-x-2 bg-slate-50 border border-slate-200 text-[#0a2619] py-2.5 rounded-xl font-bold text-xs hover:bg-[#0a2619] hover:text-white hover:border-[#0a2619] transition-all"
               >
                 <span>Ver Detalhes</span>
                 <ArrowRight size={14} />

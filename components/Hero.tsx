@@ -34,63 +34,62 @@ const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
         </svg>
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto lg:ml-16 lg:mr-auto px-4 sm:px-6 lg:px-8 py-24 pt-32 lg:py-48 flex flex-col lg:flex-row items-center gap-12">
+      <div className="relative z-10 max-w-7xl mx-auto lg:ml-16 lg:mr-auto px-4 sm:px-6 lg:px-8 py-20 pt-28 lg:py-32 flex flex-col lg:flex-row items-center gap-12">
         <div className="w-full lg:w-1/2">
-          <div className="inline-flex items-center space-x-2 bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 px-4 py-1.5 rounded-full mb-8">
-            <Activity size={16} className="text-emerald-600" />
-            <span className="text-xs font-bold uppercase tracking-widest">Excelência em Remoções e Emergências</span>
+          <div className="inline-flex items-center space-x-2 bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 px-3.5 py-1.5 rounded-full mb-6">
+            <Activity size={15} className="text-emerald-600" />
+            <span className="text-xs font-bold uppercase tracking-wider">Excelência em Remoções e Emergências</span>
           </div>
 
-          <h1 className="text-5xl md:text-8xl font-[900] leading-[0.95] mb-8 tracking-[-0.05em] text-[#0a2619]">
-            Sua Vida em
-            <br />
-            <span className="text-emerald-500 inline-block mt-4">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold leading-tight mb-5 tracking-tight text-[#0a2619]">
+            Sua Vida em{' '}
+            <span className="text-emerald-600 block mt-1">
               Primeiro Lugar.
             </span>
           </h1>
 
-          <p className="text-lg md:text-2xl text-[#0a2619] mb-12 leading-relaxed font-medium max-w-xl opacity-80">
+          <p className="text-base md:text-lg text-[#0a2619]/80 mb-8 leading-relaxed font-medium max-w-xl">
             Segurança, conforto e agilidade no transporte de pacientes.
             Frota moderna de UTI e Suporte Básico com equipe especializada para atender Limeira e região com excelência.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-5 mb-20 whitespace-nowrap">
+          <div className="flex flex-col sm:flex-row gap-4 mb-12 whitespace-nowrap">
             <a
               href="tel:1937923947"
-              className="flex items-center justify-center space-x-3 bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-5 rounded-2xl text-lg font-extrabold transition-all transform hover:scale-105 active:scale-95 shadow-2xl shadow-emerald-900/40 group"
+              className="flex items-center justify-center space-x-2.5 bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-3.5 rounded-xl text-base font-bold transition-all shadow-lg shadow-emerald-900/25 group"
             >
-              <Phone size={24} className="group-hover:animate-bounce flex-shrink-0" />
+              <Phone size={20} className="flex-shrink-0" />
               <span>(19) 3792-3947</span>
             </a>
 
             {onNavigate && (
               <button
                 onClick={() => onNavigate('schedule')}
-                className="flex items-center justify-center space-x-3 bg-white hover:bg-emerald-50 text-[#0a2619] px-8 py-5 rounded-2xl text-lg font-extrabold transition-all transform hover:scale-105 active:scale-95 shadow-xl border border-emerald-100"
+                className="flex items-center justify-center space-x-2.5 bg-white hover:bg-emerald-50 text-[#0a2619] px-6 py-3.5 rounded-xl text-base font-bold transition-all shadow-md border border-emerald-100"
               >
-                <CalendarClock size={24} className="text-emerald-600 flex-shrink-0" />
+                <CalendarClock size={20} className="text-emerald-600 flex-shrink-0" />
                 <span>Agendar Online</span>
               </button>
             )}
           </div>
 
-          {/* Seção de Status com 4 colunas incluindo Suporte Básico */}
-          <div className="grid grid-cols-2 gap-y-10 md:flex md:flex-row md:items-center md:gap-8 lg:gap-8">
-            <div className="flex flex-col border-l-4 border-emerald-500 pl-4 whitespace-nowrap">
-              <span className="text-3xl md:text-4xl font-black text-[#0a2619] tracking-tight">24h</span>
-              <span className="text-xs md:text-sm uppercase font-bold text-emerald-600 tracking-wider">Atendimento Imediato</span>
+          {/* Seção de Status com 4 colunas */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="flex flex-col border-l-4 border-emerald-500 pl-3 bg-white/90 backdrop-blur-md p-2.5 rounded-r-xl shadow-sm">
+              <span className="text-xl md:text-2xl font-extrabold text-[#0a2619]">24h</span>
+              <span className="text-[11px] uppercase font-bold text-emerald-700 tracking-wide">Atendimento</span>
             </div>
-            <div className="flex flex-col border-l-4 border-emerald-500 pl-4 whitespace-nowrap">
-              <span className="text-3xl md:text-4xl font-black text-[#0a2619] tracking-tight">UTI</span>
-              <span className="text-xs md:text-sm uppercase font-bold text-emerald-600 tracking-wider">Suporte Avançado</span>
+            <div className="flex flex-col border-l-4 border-emerald-500 pl-3 bg-white/90 backdrop-blur-md p-2.5 rounded-r-xl shadow-sm">
+              <span className="text-xl md:text-2xl font-extrabold text-[#0a2619]">UTI</span>
+              <span className="text-[11px] uppercase font-bold text-emerald-700 tracking-wide">Suporte Avançado</span>
             </div>
-            <div className="flex flex-col border-l-4 border-emerald-500 pl-4 whitespace-nowrap bg-white/90 backdrop-blur-md p-3 rounded-xl shadow-sm">
-              <span className="text-3xl md:text-4xl font-black text-[#0a2619] tracking-tight">BÁSICA</span>
-              <span className="text-xs md:text-sm uppercase font-bold text-emerald-600 tracking-wider">Remoção Segura</span>
+            <div className="flex flex-col border-l-4 border-emerald-500 pl-3 bg-white/90 backdrop-blur-md p-2.5 rounded-r-xl shadow-sm">
+              <span className="text-xl md:text-2xl font-extrabold text-[#0a2619]">BÁSICA</span>
+              <span className="text-[11px] uppercase font-bold text-emerald-700 tracking-wide">Remoção Segura</span>
             </div>
-            <div className="flex flex-col border-l-4 border-emerald-500 pl-4 whitespace-nowrap bg-white/90 backdrop-blur-md p-3 rounded-xl shadow-sm">
-              <span className="text-3xl md:text-4xl font-black text-[#0a2619] tracking-tight">BASE</span>
-              <span className="text-xs md:text-sm uppercase font-bold text-emerald-600 tracking-wider">Própria em Limeira</span>
+            <div className="flex flex-col border-l-4 border-emerald-500 pl-3 bg-white/90 backdrop-blur-md p-2.5 rounded-r-xl shadow-sm">
+              <span className="text-xl md:text-2xl font-extrabold text-[#0a2619]">BASE</span>
+              <span className="text-[11px] uppercase font-bold text-emerald-700 tracking-wide">Limeira - SP</span>
             </div>
           </div>
         </div>

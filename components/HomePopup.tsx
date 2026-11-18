@@ -1,84 +1,104 @@
 import React, { useState, useEffect } from 'react';
-import { X, CalendarCheck, ArrowRight } from 'lucide-react';
+import { X, CalendarCheck, ArrowRight, Phone, ShieldCheck } from 'lucide-react';
 import { Page } from '../App';
 
 interface HomePopupProps {
-    onNavigate: (page: Page) => void;
+  onNavigate: (page: Page) => void;
 }
 
 const HomePopup: React.FC<HomePopupProps> = ({ onNavigate }) => {
-    const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
 
-    useEffect(() => {
-        // Show popup after 3 seconds
-        const timer = setTimeout(() => {
-            setIsVisible(true);
-        }, 3000);
+  useEffect(() => {
+    if (sessionStorage.getItem('green_popup_dismissed') === '1') {
+      return;
+    }
+    const timer = setTimeout(() => {
+      setIsVisible(true);
+    }, 8000);
 
-        return () => clearTimeout(timer);
-    }, []);
+    return () => clearTimeout(timer);
+  }, []);
 
-    if (!isVisible) return null;
+  const handleDismiss = () => {
+    sessionStorage.setItem('green_popup_dismissed', '1');
+    setIsVisible(false);
+  };
 
-    return (
-        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4 sm:p-6 pointer-events-none">
-            {/* Backdrop (Optional, keeping it transparent/clickable through for now, or minimal) */}
-            <div className="absolute inset-0 pointer-events-auto bg-black/20 backdrop-blur-sm transition-opacity opacity-100" onClick={() => setIsVisible(false)}></div>
+  if (!isVisible) return null;
 
-            <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-md relative pointer-events-auto transform transition-all duration-500 animate-slideUp border border-emerald-100 overflow-hidden">
+  return (
+    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4 pointer-events-none">
+      <div
+        className="absolute inset-0 pointer-events-auto bg-slate-950/40 backdrop-blur-sm transition-opacity"
+        onClick={handleDismiss}
+      />
 
-                {/* Close Button */}
-                <button
-                    onClick={() => setIsVisible(false)}
-                    className="absolute top-4 right-4 p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors z-20"
-                >
-                    <X size={20} className="text-gray-500" />
-                </button>
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm relative pointer-events-auto animate-scaleIn border border-slate-200 overflow-hidden">
+        <div className="h-1.5 w-full bg-gradient-to-r from-emerald-600 via-emerald-400 to-teal-500" />
 
-                {/* Content */}
-                <div className="flex flex-col">
-                    {/* Image/Banner section */}
-                    <div className="h-32 bg-[#0a2619] relative overflow-hidden flex items-center justify-center">
-                        <div className="absolute inset-0 bg-emerald-600/20 mix-blend-overlay"></div>
-                        {/* Decorative circles */}
-                        <div className="absolute -top-10 -right-10 w-32 h-32 bg-emerald-500/30 rounded-full blur-2xl"></div>
-                        <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-emerald-400/20 rounded-full blur-2xl"></div>
+        <button
+          onClick={handleDismiss}
+          className="absolute top-4 right-4 p-1.5 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors text-slate-500"
+          aria-label="Fechar"
+        >
+          <X size={16} />
+        </button>
 
-                        <div className="relative z-10 flex flex-col items-center">
-                            <div className="bg-white/10 p-3 rounded-2xl backdrop-blur-md mb-2 border border-white/20">
-                                <CalendarCheck size={32} className="text-emerald-400" />
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="p-8 text-center">
-                        <h3 className="text-2xl font-black text-[#0a2619] mb-3 leading-tight">Agende Online Agora</h3>
-                        <p className="text-emerald-900/60 mb-8 text-sm font-medium leading-relaxed">
-                            Precisa de uma ambulância com data e hora marcada? Utilize nosso sistema de agendamento online. É rápido, fácil e seguro.
-                        </p>
-
-                        <button
-                            onClick={() => {
-                                setIsVisible(false);
-                                onNavigate('schedule');
-                            }}
-                            className="w-full bg-emerald-600 text-white py-4 rounded-xl font-bold text-sm uppercase tracking-wider hover:bg-emerald-500 transition-all shadow-xl shadow-emerald-600/30 flex items-center justify-center space-x-2 group"
-                        >
-                            <span>Acessar Agendamento</span>
-                            <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                        </button>
-
-                        <button
-                            onClick={() => setIsVisible(false)}
-                            className="mt-4 text-xs font-bold text-gray-400 hover:text-gray-600 transition-colors"
-                        >
-                            Não, obrigado
-                        </button>
-                    </div>
-                </div>
+        <div className="p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-11 h-11 rounded-xl bg-[#0a2619] text-emerald-400 flex items-center justify-center shrink-0">
+              <CalendarCheck size={22} />
             </div>
+            <div>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-700 block">
+                Atendimento 24h
+              </span>
+              <h3 className="text-lg font-bold text-[#0a2619] leading-tight">
+                Agende sua Remoção Online
+              </h3>
+            </div>
+          </div>
+
+          <p className="text-sm text-slate-600 leading-relaxed mb-5">
+            Solicite ambulância UTI Móvel ou Suporte Básico com data e hora marcada diretamente pela nossa central digital.
+          </p>
+
+          <div className="space-y-2.5">
+            <button
+              onClick={() => {
+                handleDismiss();
+                onNavigate('schedule');
+              }}
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-colors shadow-md shadow-emerald-600/20"
+            >
+              <span>Solicitar Remoção Agora</span>
+              <ArrowRight size={16} />
+            </button>
+
+            <a
+              href="tel:1937923947"
+              onClick={handleDismiss}
+              className="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 text-[#0a2619] py-2.5 rounded-xl font-semibold text-xs flex items-center justify-center gap-2 transition-colors"
+            >
+              <Phone size={14} className="text-emerald-600" />
+              <span>Emergência? Ligue (19) 3792-3947</span>
+            </a>
+          </div>
+
+          <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
+            <span className="inline-flex items-center gap-1">
+              <ShieldCheck size={13} className="text-emerald-600" />
+              Remoções Pro
+            </span>
+            <button onClick={handleDismiss} className="hover:text-slate-600 font-semibold">
+              Agora não
+            </button>
+          </div>
         </div>
-    );
+      </div>
+    </div>
+  );
 };
 
 export default HomePopup;

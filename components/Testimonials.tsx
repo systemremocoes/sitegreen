@@ -25,28 +25,28 @@ const Testimonials: React.FC = () => {
   ];
 
   return (
-    <div className="py-24 bg-white">
+    <div className="py-16 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-emerald-600 font-bold uppercase tracking-widest text-sm mb-4">Depoimentos</h2>
-          <h3 className="text-3xl md:text-5xl font-extrabold text-emerald-950 mb-6">Confiança Que Salva Vidas</h3>
-          <p className="text-emerald-800/70 max-w-2xl mx-auto text-lg leading-relaxed">
+        <div className="text-center mb-10">
+          <h2 className="text-emerald-700 font-bold uppercase tracking-wider text-xs mb-2">Depoimentos</h2>
+          <h3 className="text-2xl md:text-3xl font-extrabold text-emerald-950 mb-3">Confiança Que Salva Vidas</h3>
+          <p className="text-slate-600 max-w-2xl mx-auto text-sm md:text-base leading-relaxed">
             A opinião de quem confiou na nossa equipe em momentos de necessidade.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {reviews.map((review, i) => (
-            <div key={i} className="bg-emerald-50 p-8 rounded-3xl relative">
-              <Quote className="absolute top-6 right-8 text-emerald-200" size={48} />
-              <p className="text-emerald-900/70 italic mb-8 relative z-10 leading-relaxed font-light text-lg">
+            <div key={i} className="bg-emerald-50/70 border border-emerald-100 p-6 rounded-2xl relative flex flex-col justify-between">
+              <Quote className="absolute top-5 right-6 text-emerald-200" size={32} />
+              <p className="text-emerald-950/80 italic mb-6 relative z-10 leading-relaxed text-sm">
                 "{review.text}"
               </p>
-              <div className="flex items-center space-x-4">
-                <img src={review.image} alt={review.name} className="w-14 h-14 rounded-full border-2 border-white shadow-md" />
+              <div className="flex items-center space-x-3">
+                <img src={review.image} alt={review.name} className="w-11 h-11 rounded-full border-2 border-white shadow-sm" />
                 <div>
-                  <h4 className="font-bold text-emerald-950">{review.name}</h4>
-                  <p className="text-emerald-600 text-sm font-medium">{review.role}</p>
+                  <h4 className="font-bold text-sm text-emerald-950">{review.name}</h4>
+                  <p className="text-emerald-700 text-xs font-medium">{review.role}</p>
                 </div>
               </div>
             </div>
