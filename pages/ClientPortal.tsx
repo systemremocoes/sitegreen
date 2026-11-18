@@ -50,7 +50,7 @@ const ClientPortal: React.FC<ClientPortalProps> = ({ onNavigate, onSelectRemoval
   const handleAccreditedLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!docInput.trim() || !contractInput.trim()) {
-      setLoginError('Informe o CPF/CNPJ e o código do contrato ou senha.');
+      setLoginError('Informe o CPF/CNPJ e o código de acesso do portal.');
       return;
     }
 
@@ -236,14 +236,14 @@ const ClientPortal: React.FC<ClientPortalProps> = ({ onNavigate, onSelectRemoval
 
                 <div className="space-y-1.5">
                   <label className="block text-sm font-semibold text-[#0a2619]">
-                    Código do Contrato / Senha
+                    Código de Acesso do Portal
                   </label>
                   <div className="relative">
                     <input
                       type="password"
                       value={contractInput}
                       onChange={(e) => setContractInput(e.target.value)}
-                      placeholder="Digite sua senha ou código"
+                      placeholder="Ex.: ABCDE-12345"
                       className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/15 outline-none text-sm font-medium text-[#0a2619] transition-all"
                     />
                     <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />

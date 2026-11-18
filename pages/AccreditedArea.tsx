@@ -136,7 +136,7 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!docInput.trim() || !contractInput.trim()) {
-      setLoginError('Informe seu CPF/CNPJ e o código do contrato.');
+      setLoginError('Informe seu CPF/CNPJ e o código de acesso do portal.');
       return;
     }
 
@@ -261,13 +261,13 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-[#0a2619]">Código do Contrato</label>
+                <label className="text-xs font-bold uppercase tracking-wider text-[#0a2619]">Código de Acesso do Portal</label>
                 <input
                   type="password"
                   required
                   value={contractInput}
                   onChange={(e) => setContractInput(e.target.value)}
-                  placeholder="Digite o código do contrato"
+                  placeholder="Ex.: ABCDE-12345 (fornecido pela Green)"
                   className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 outline-none bg-slate-50 focus:bg-white text-sm"
                 />
               </div>
