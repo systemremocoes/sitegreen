@@ -17,6 +17,8 @@ export interface QuotationPayload {
   removalType?: string;
   cpf?: string;
   credenciadoToken?: string;
+  /** Credenciado pedindo para o próprio titular do plano (cadastro do sistema) */
+  paraTitular?: boolean;
 }
 
 export interface QuotationResult {
@@ -533,11 +535,23 @@ export interface CredenciadoPlano {
   restantes_mes: number | null;
 }
 
-export async function fetchCredenciadoRemocoes(
-  token: string
-): Promise<{ solicitacoes: PortalSolicitacao[]; remocoes: CredenciadoRemocao[]; plano: CredenciadoPlano | null }> {
+/** Titular do plano, com os dados do cadastro no sistema (preenche a solicitação "para mim"). */
+export interface CredenciadoTitular {
+  nome: string;
+  idade: string;
+  telefone: string;
+  endereco: string;
+  observacoes: string;
+}
+
+export async function fetchCredenciadoRemocoes(token: string): Promise<{
+  solicitacoes: PortalSolicitacao[];
+  remocoes: CredenciadoRemocao[];
+  plano: CredenciadoPlano | null;
+  titular: CredenciadoTitular | null;
+}> {
   const res = await callEdgeFunction<any>('credenciado-remocoes', { token }, token);
-  return { solicitacoes: res.solicitacoes || [], remocoes: res.remocoes || [], plano: res.plano || null };
+  return { solicitacoes: res.solicitacoes || [], remocoes: res.remocoes || [], plano: res.plano || null, titular: res.titular || null };
 }
 
 /** O credenciado pede um novo código de acesso (enviado ao e-mail cadastrado no contrato). */
