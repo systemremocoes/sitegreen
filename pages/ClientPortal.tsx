@@ -13,7 +13,7 @@ import {
   KeyRound
 } from 'lucide-react';
 import { Page } from '../App';
-import { normalizeDigits, credenciadoLogin, saveCredenciadoSession } from '../lib/remocoesPro';
+import { normalizeDigits } from '../lib/remocoesPro';
 
 interface ClientPortalProps {
   onNavigate: (page: Page) => void;
@@ -25,12 +25,6 @@ const ClientPortal: React.FC<ClientPortalProps> = ({ onNavigate, onSelectRemoval
   const [protocolInput, setProtocolInput] = useState('');
   const [verifierInput, setVerifierInput] = useState('');
   const [protocolError, setProtocolError] = useState('');
-
-  // Card 2: Credenciado
-  const [docInput, setDocInput] = useState('');
-  const [contractInput, setContractInput] = useState('');
-  const [loginError, setLoginError] = useState('');
-  const [loginLoading, setLoginLoading] = useState(false);
 
   const handleClientSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,26 +39,6 @@ const ClientPortal: React.FC<ClientPortalProps> = ({ onNavigate, onSelectRemoval
     }
     setProtocolError('');
     onSelectRemovalLookup(protocolInput.trim(), verifierInput.trim());
-  };
-
-  const handleAccreditedLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!docInput.trim() || !contractInput.trim()) {
-      setLoginError('Informe o CPF/CNPJ e o código de acesso do portal.');
-      return;
-    }
-
-    setLoginError('');
-    setLoginLoading(true);
-    try {
-      const auth = await credenciadoLogin(docInput.trim(), contractInput.trim());
-      saveCredenciadoSession(auth);
-      onNavigate('accredited-area');
-    } catch (err: any) {
-      setLoginError(err?.message || 'Credenciais inválidas ou contrato inativo.');
-    } finally {
-      setLoginLoading(false);
-    }
   };
 
   return (
@@ -230,52 +204,22 @@ const ClientPortal: React.FC<ClientPortalProps> = ({ onNavigate, onSelectRemoval
                 </div>
               </div>
 
-              {loginError && (
-                <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium flex items-center gap-2">
-                  <AlertCircle size={16} className="shrink-0" />
-                  <span>{loginError}</span>
-                </div>
-              )}
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-start gap-2.5 text-xs text-slate-600 mb-4">
+                <Lock size={16} className="text-emerald-600 shrink-0 mt-0.5" />
+                <span>
+                  Acesso com o <strong>CPF/CNPJ</strong> e um <strong>código enviado por e-mail</strong> a cada entrada
+                  (válido por 10 minutos).
+                </span>
+              </div>
 
-              <form onSubmit={handleAccreditedLogin} className="space-y-4">
-                <div className="space-y-1.5">
-                  <label className="block text-sm font-semibold text-[#0a2619]">
-                    CPF ou CNPJ do Titular
-                  </label>
-                  <input
-                    type="text"
-                    value={docInput}
-                    onChange={(e) => setDocInput(e.target.value)}
-                    placeholder="000.000.000-00 ou 00.000.000/0001-00"
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/15 outline-none text-sm font-medium text-[#0a2619] transition-all"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="block text-sm font-semibold text-[#0a2619]">
-                    Código de Acesso do Portal
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="password"
-                      value={contractInput}
-                      onChange={(e) => setContractInput(e.target.value)}
-                      placeholder="Ex.: ABCDE-12345"
-                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/15 outline-none text-sm font-medium text-[#0a2619] transition-all"
-                    />
-                    <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={loginLoading}
-                  className="w-full bg-[#0a2619] hover:bg-emerald-900 text-white py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-colors shadow-sm disabled:opacity-50"
-                >
-                  <span>{loginLoading ? 'Autenticando...' : 'Entrar como Credenciado'}</span>
-                  {!loginLoading && <ArrowRight size={17} />}
-                </button>
-              </form>
+              <button
+                type="button"
+                onClick={() => onNavigate('accredited-area')}
+                className="w-full bg-[#0a2619] hover:bg-emerald-900 text-white py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-colors shadow-sm"
+              >
+                <span>Entrar como Credenciado</span>
+                <ArrowRight size={17} />
+              </button>
             </div>
 
             <div className="mt-8 pt-5 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">

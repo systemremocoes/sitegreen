@@ -176,8 +176,8 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!docInput.trim() || !contractInput.trim()) {
-      setLoginError('Informe seu CPF/CNPJ e o código de acesso do portal.');
+    if (!docInput.trim() || contractInput.replace(/\D/g, '').length !== 6) {
+      setLoginError('Informe seu CPF/CNPJ e o código de 6 dígitos recebido por e-mail.');
       return;
     }
 
@@ -320,36 +320,55 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-[#0a2619]">Código de Acesso do Portal</label>
-                <input
-                  type="password"
-                  required
-                  value={contractInput}
-                  onChange={(e) => setContractInput(e.target.value)}
-                  placeholder="Ex.: ABCDE-12345 (fornecido pela Green)"
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 outline-none bg-slate-50 focus:bg-white text-sm"
-                />
-                <button
-                  type="button"
-                  onClick={handleRequestCode}
-                  disabled={codeRequesting}
-                  className="text-xs font-bold text-emerald-700 hover:underline disabled:opacity-50"
-                >
-                  {codeRequesting ? 'Enviando…' : 'Esqueceu o código? Gerar novo código por e-mail'}
-                </button>
-                {codeMessage && (
+              {!codeMessage ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={handleRequestCode}
+                    disabled={codeRequesting}
+                    className="w-full bg-[#0a2619] hover:bg-emerald-900 text-white py-3.5 rounded-xl font-bold text-sm transition-all shadow-md disabled:opacity-50"
+                  >
+                    {codeRequesting ? 'Enviando código…' : 'Receber código de acesso por e-mail'}
+                  </button>
+                  <p className="text-xs text-slate-500 text-center">
+                    A cada acesso enviamos um código de 6 dígitos para o e-mail cadastrado. Ele vale por 10 minutos.
+                  </p>
+                </>
+              ) : (
+                <>
                   <p className="text-xs text-emerald-800 bg-emerald-50 border border-emerald-100 rounded-lg p-2.5">{codeMessage}</p>
-                )}
-              </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold uppercase tracking-wider text-[#0a2619]">Código recebido por e-mail</label>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
+                      required
+                      maxLength={6}
+                      value={contractInput}
+                      onChange={(e) => setContractInput(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      placeholder="••••••"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 outline-none bg-slate-50 focus:bg-white text-center text-2xl font-bold tracking-[0.5em]"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleRequestCode}
+                      disabled={codeRequesting}
+                      className="text-xs font-bold text-emerald-700 hover:underline disabled:opacity-50"
+                    >
+                      {codeRequesting ? 'Enviando…' : 'Não recebeu? Enviar novo código'}
+                    </button>
+                  </div>
 
-              <button
-                type="submit"
-                disabled={loginLoading}
-                className="w-full bg-[#0a2619] hover:bg-emerald-900 text-white py-3.5 rounded-xl font-bold text-sm transition-all shadow-md disabled:opacity-50"
-              >
-                {loginLoading ? 'Autenticando no Remoções Pro...' : 'Entrar no Portal do Credenciado'}
-              </button>
+                  <button
+                    type="submit"
+                    disabled={loginLoading || contractInput.length !== 6}
+                    className="w-full bg-[#0a2619] hover:bg-emerald-900 text-white py-3.5 rounded-xl font-bold text-sm transition-all shadow-md disabled:opacity-50"
+                  >
+                    {loginLoading ? 'Entrando…' : 'Entrar no Portal do Credenciado'}
+                  </button>
+                </>
+              )}
             </form>
 
             <div className="mt-6 pt-5 border-t border-slate-100 text-center">
