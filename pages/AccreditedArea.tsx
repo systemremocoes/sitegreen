@@ -36,7 +36,9 @@ import {
   clearCredenciadoSession,
   maskSecret,
   safeExternalUrl,
-  EdgeFunctionError
+  EdgeFunctionError,
+  fetchCredenciadoRemocoes,
+  PortalSolicitacao
 } from '../lib/remocoesPro';
 
 interface AccreditedAreaProps {
@@ -94,6 +96,11 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
   const [trackingData, setTrackingData] = useState<NormalizedTracking | { error: string } | null>(null);
   const [searching, setSearching] = useState(false);
 
+  // Solicitações e remoções do contrato, direto do sistema
+  const [solicitacoes, setSolicitacoes] = useState<PortalSolicitacao[] | null>(null);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyError, setHistoryError] = useState<string | null>(null);
+
   useEffect(() => {
     const stored = loadCredenciadoSession();
     if (stored) setSession(stored);
@@ -106,12 +113,39 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
     setBoletosData(null);
   }, []);
 
+  const loadHistory = useCallback(
+    async (token: string) => {
+      setHistoryLoading(true);
+      setHistoryError(null);
+      try {
+        const res = await fetchCredenciadoRemocoes(token);
+        setSolicitacoes(res.solicitacoes);
+      } catch (err: any) {
+        if (err instanceof EdgeFunctionError && (err.status === 401 || err.status === 403)) {
+          handleLogout();
+          setLoginError('Sua sessão expirou. Entre novamente.');
+          return;
+        }
+        setHistoryError(err?.message || 'Não foi possível carregar as remoções.');
+      } finally {
+        setHistoryLoading(false);
+      }
+    },
+    [handleLogout]
+  );
+
+  useEffect(() => {
+    if (session?.token && activeTab === 'history') {
+      loadHistory(session.token);
+    }
+  }, [session?.token, activeTab, loadHistory]);
+
   const loadBoletos = useCallback(
-    async (token: string, status: 'Todos' | 'Pendente' | 'Pago' | 'Atrasado') => {
+    async (token: string, status: 'Todos' | 'Pendente' | 'Pago' | 'Atrasado', atualizar = false) => {
       setBoletosLoading(true);
       setBoletosError(null);
       try {
-        const res = await fetchCredenciadoBoletos(token, status);
+        const res = await fetchCredenciadoBoletos(token, status, atualizar);
         setBoletosData(res);
       } catch (err: any) {
         if (err instanceof EdgeFunctionError && (err.status === 401 || err.status === 403)) {
@@ -441,10 +475,10 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
                   </select>
                   <button
                     type="button"
-                    onClick={() => loadBoletos(session.token, boletoStatusFilter)}
+                    onClick={() => loadBoletos(session.token, boletoStatusFilter, true)}
                     disabled={boletosLoading}
                     className="p-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600"
-                    title="Atualizar"
+                    title="Atualizar e conferir pagamentos"
                   >
                     <RefreshCw size={16} className={boletosLoading ? 'animate-spin' : ''} />
                   </button>
@@ -825,9 +859,33 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
                 </div>
               )}
 
-              {protocols.length === 0 ? (
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                  Solicitações do contrato {solicitacoes ? `(${solicitacoes.length})` : ''}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => loadHistory(session.token)}
+                  disabled={historyLoading}
+                  className="p-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600"
+                  title="Atualizar"
+                >
+                  <RefreshCw size={16} className={historyLoading ? 'animate-spin' : ''} />
+                </button>
+              </div>
+
+              {historyError && (
+                <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium flex items-center gap-2">
+                  <AlertCircle size={17} />
+                  <span>{historyError}</span>
+                </div>
+              )}
+
+              {historyLoading && !solicitacoes ? (
+                <p className="text-center text-sm text-slate-500 py-10">Carregando remoções…</p>
+              ) : !solicitacoes || solicitacoes.length === 0 ? (
                 <div className="text-center py-10 bg-slate-50 rounded-xl border border-dashed border-slate-200">
-                  <p className="text-slate-500 text-sm mb-4">Nenhuma solicitação feita neste navegador ainda.</p>
+                  <p className="text-slate-500 text-sm mb-4">Nenhuma solicitação registrada para este contrato ainda.</p>
                   <button
                     onClick={() => setActiveTab('request')}
                     className="bg-emerald-600 text-white px-5 py-2.5 rounded-xl font-bold text-xs"
@@ -837,24 +895,37 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
                 </div>
               ) : (
                 <div className="space-y-2.5">
-                  {protocols.map((item) => (
-                    <div
-                      key={item.protocol}
-                      className="p-4 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-emerald-200 transition-all"
-                    >
-                      <div>
-                        <p className="font-mono font-bold text-emerald-700 text-sm">{item.protocol}</p>
-                        <p className="font-semibold text-[#0a2619] text-sm">{item.serviceType}</p>
-                        <p className="text-xs text-slate-500">{formatDateBR(item.createdAt)}</p>
-                      </div>
-                      <button
-                        onClick={() => handleSearchProtocol(item.protocol)}
-                        className="px-4 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-xs shrink-0"
+                  {solicitacoes.map((item) => {
+                    const status = item.remocao?.status || item.status;
+                    const protocolo = item.remocao?.protocolo || item.protocolo;
+                    return (
+                      <div
+                        key={item.id}
+                        className="p-4 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-emerald-200 transition-all"
                       >
-                        Consultar Status & Documentos
-                      </button>
-                    </div>
-                  ))}
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <p className="font-mono font-bold text-emerald-700 text-sm">{protocolo}</p>
+                            <span className="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-100">
+                              {status}
+                            </span>
+                          </div>
+                          <p className="font-semibold text-[#0a2619] text-sm truncate">
+                            {item.paciente} • {item.tipo}
+                          </p>
+                          <p className="text-xs text-slate-500 truncate">
+                            {formatDateBR(item.data)} {item.hora ? `às ${String(item.hora).slice(0, 5)}` : ''} • {item.origem} → {item.destino}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => handleSearchProtocol(item.remocao?.protocolo || item.id)}
+                          className="px-4 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-xs shrink-0"
+                        >
+                          Consultar Status & Documentos
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>

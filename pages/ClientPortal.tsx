@@ -102,6 +102,23 @@ const ClientPortal: React.FC<ClientPortalProps> = ({ onNavigate, onSelectRemoval
                 </div>
               </div>
 
+              <div className="mb-6 p-4 rounded-xl bg-emerald-50 border border-emerald-100">
+                <p className="text-sm font-bold text-[#0a2619] mb-1">Minha Conta</p>
+                <p className="text-xs text-emerald-950/70 mb-3">
+                  Cadastre-se para solicitar remoções, aprovar orçamentos e pagar boletos ou PIX. O acesso é por código enviado ao seu e-mail.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => onNavigate('client-account')}
+                  className="w-full bg-[#0a2619] hover:bg-emerald-900 text-white py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-colors"
+                >
+                  <KeyRound size={16} />
+                  <span>Entrar ou criar cadastro</span>
+                  <ArrowRight size={16} />
+                </button>
+              </div>
+
+              <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Ou consulte uma remoção pelo protocolo</p>
               <p className="text-sm text-slate-600 leading-relaxed mb-5">
                 Para proteger os dados do paciente, a consulta exige o <strong>Protocolo</strong> junto com o <strong>Telefone ou CPF</strong> informado na solicitação.
               </p>

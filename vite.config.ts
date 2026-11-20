@@ -23,7 +23,8 @@ function contentSecurityPolicy(functionsBaseUrl: string): Plugin {
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com data:",
     "img-src 'self' data: blob: https:",
-    `connect-src 'self' ${functionsOrigin} ${google}`,
+    // viacep.com.br: preenchimento automático do endereço no cadastro da Área do Cliente
+    `connect-src 'self' ${functionsOrigin} ${google} https://viacep.com.br`,
     `frame-src ${google}`,
     "object-src 'none'",
     "base-uri 'self'",

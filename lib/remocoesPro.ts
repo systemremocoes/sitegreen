@@ -419,11 +419,12 @@ export async function credenciadoLogin(cpfCnpj: string, contractCode: string): P
 
 export async function fetchCredenciadoBoletos(
   token: string,
-  status: 'Todos' | 'Pendente' | 'Pago' | 'Atrasado' = 'Todos'
+  status: 'Todos' | 'Pendente' | 'Pago' | 'Atrasado' = 'Todos',
+  atualizar = false
 ): Promise<CredenciadoBoletosResponse> {
   const res = await callEdgeFunction<any>(
     'credenciado-boletos',
-    { token, status },
+    { token, status, atualizar },
     token
   );
 
@@ -434,4 +435,199 @@ export async function fetchCredenciadoBoletos(
     invoices: d.invoices || [],
     boletos: d.boletos || []
   };
+}
+
+// ============================================================
+// Portal do Credenciado — solicitações e remoções do contrato (direto do sistema)
+// ============================================================
+
+export interface PortalRemocaoResumo {
+  protocolo: string;
+  status: string;
+  data: string | null;
+}
+
+export interface PortalSolicitacao {
+  id: string;
+  protocolo: string;
+  criado_em: string;
+  data: string | null;
+  hora: string | null;
+  paciente: string;
+  origem: string;
+  destino: string;
+  tipo: string;
+  tipo_remocao: string;
+  status: string;
+  remocao: PortalRemocaoResumo | null;
+  // Somente na Área do Cliente
+  valor?: number | null;
+  pode_aprovar?: boolean;
+  pode_recusar?: boolean;
+  aprovado_em?: string | null;
+  boleto_id?: string | null;
+}
+
+export interface CredenciadoRemocao {
+  protocolo: string;
+  criado_em: string;
+  data: string | null;
+  hora: string | null;
+  paciente: string;
+  origem: string;
+  destino: string;
+  tipo: string;
+  tipo_remocao: string;
+  status: string;
+  faturada: boolean;
+}
+
+export async function fetchCredenciadoRemocoes(
+  token: string
+): Promise<{ solicitacoes: PortalSolicitacao[]; remocoes: CredenciadoRemocao[] }> {
+  const res = await callEdgeFunction<any>('credenciado-remocoes', { token }, token);
+  return { solicitacoes: res.solicitacoes || [], remocoes: res.remocoes || [] };
+}
+
+// ============================================================
+// Área do Cliente (cliente avulso) — cadastro, código por e-mail e sessão
+// ============================================================
+
+export interface ClienteProfile {
+  nome: string;
+  documento: string;
+  email: string | null;
+  telefone: string | null;
+  cep: string | null;
+  endereco: string | null;
+  numero: string | null;
+  complemento: string | null;
+  bairro: string | null;
+  cidade: string | null;
+  uf: string | null;
+}
+
+export interface ClienteBoleto {
+  id: string;
+  descricao: string | null;
+  valor: number;
+  vencimento: string | null;
+  emissao: string | null;
+  status: string;
+  data_pagamento: string | null;
+  linha_digitavel: string | null;
+  pdf_url: string | null;
+  pagar_url: string | null;
+}
+
+export interface ClienteResumo {
+  cliente: ClienteProfile;
+  solicitacoes: PortalSolicitacao[];
+  boletos: ClienteBoleto[];
+}
+
+export interface ClienteCadastroPayload {
+  nome: string;
+  cpf_cnpj: string;
+  email: string;
+  telefone: string;
+  nascimento?: string;
+  cep: string;
+  endereco: string;
+  numero: string;
+  complemento?: string;
+  bairro: string;
+  cidade: string;
+  uf: string;
+  aceite: boolean;
+}
+
+export interface ClienteSolicitacaoPayload {
+  paciente_nome?: string;
+  paciente_idade?: string;
+  origem: string;
+  destino: string;
+  data: string;
+  hora: string;
+  tipo_servico: string;
+  tipo_remocao: string;
+  observacoes?: string;
+}
+
+const CLIENTE_SESSION_KEY = 'green_client_session';
+
+interface StoredClienteSession {
+  token: string;
+  cliente: ClienteProfile;
+  expiresAt: number;
+}
+
+export function saveClienteSession(token: string, cliente: ClienteProfile, expiresAt: number): void {
+  try {
+    localStorage.setItem(CLIENTE_SESSION_KEY, JSON.stringify({ token, cliente, expiresAt }));
+  } catch {
+    // Ignore storage errors
+  }
+}
+
+export function loadClienteSession(): StoredClienteSession | null {
+  try {
+    const raw = localStorage.getItem(CLIENTE_SESSION_KEY);
+    if (!raw) return null;
+    const parsed: Partial<StoredClienteSession> = JSON.parse(raw);
+    if (!parsed?.token || !parsed.cliente || !parsed.expiresAt || parsed.expiresAt < Date.now()) {
+      localStorage.removeItem(CLIENTE_SESSION_KEY);
+      return null;
+    }
+    return parsed as StoredClienteSession;
+  } catch {
+    clearClienteSession();
+    return null;
+  }
+}
+
+export function clearClienteSession(): void {
+  try {
+    localStorage.removeItem(CLIENTE_SESSION_KEY);
+  } catch {
+    // Ignore storage errors
+  }
+}
+
+export async function clienteCadastrar(payload: ClienteCadastroPayload): Promise<{ message: string; novo: boolean }> {
+  return callEdgeFunction('cliente-portal', { action: 'cadastrar', ...payload });
+}
+
+export async function clienteEnviarCodigo(cpfCnpj: string): Promise<{ message: string }> {
+  return callEdgeFunction('cliente-portal', { action: 'enviar-codigo', cpf_cnpj: cpfCnpj });
+}
+
+export async function clienteEntrar(
+  cpfCnpj: string,
+  codigo: string
+): Promise<{ token: string; expiresAt: number; cliente: ClienteProfile }> {
+  return callEdgeFunction('cliente-portal', { action: 'entrar', cpf_cnpj: cpfCnpj, codigo });
+}
+
+export async function clienteResumo(token: string, atualizar = false): Promise<ClienteResumo> {
+  const res = await callEdgeFunction<any>('cliente-portal', { action: 'resumo', token, atualizar }, token);
+  return { cliente: res.cliente, solicitacoes: res.solicitacoes || [], boletos: res.boletos || [] };
+}
+
+export async function clienteSolicitar(
+  token: string,
+  payload: ClienteSolicitacaoPayload
+): Promise<{ protocolo: string; message: string }> {
+  return callEdgeFunction('cliente-portal', { action: 'solicitar', token, ...payload }, token);
+}
+
+export async function clienteAprovar(
+  token: string,
+  quotationId: string
+): Promise<{ message: string; boleto: { pdf_url: string | null; pagar_url: string | null; linha_digitavel: string | null } }> {
+  return callEdgeFunction('cliente-portal', { action: 'aprovar', token, quotation_id: quotationId }, token);
+}
+
+export async function clienteRecusar(token: string, quotationId: string, motivo?: string): Promise<{ message: string }> {
+  return callEdgeFunction('cliente-portal', { action: 'recusar', token, quotation_id: quotationId, motivo }, token);
 }

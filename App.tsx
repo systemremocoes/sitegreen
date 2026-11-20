@@ -11,6 +11,7 @@ import Plans from './pages/Plans';
 import ClientPortal from './pages/ClientPortal';
 import ClientArea from './pages/ClientArea';
 import AccreditedArea from './pages/AccreditedArea';
+import ClientAccount from './pages/ClientAccount';
 import Footer from './components/Footer';
 import WhatsAppButton from './components/WhatsAppButton';
 import ScheduleModal from './components/ScheduleModal';
@@ -25,6 +26,7 @@ export type Page =
   | 'client-portal'
   | 'client-area'
   | 'accredited-area'
+  | 'client-account'
   | 'privacy'
   | 'terms';
 
@@ -43,6 +45,7 @@ function getInitialRoute(): { page: Page; serviceId: string | null } {
     'client-portal',
     'client-area',
     'accredited-area',
+    'client-account',
     'privacy',
     'terms'
   ];
@@ -136,6 +139,7 @@ const App: React.FC = () => {
           />
         )}
         {currentPage === 'accredited-area' && <AccreditedArea onNavigate={navigate} />}
+        {currentPage === 'client-account' && <ClientAccount onNavigate={navigate} />}
         {currentPage === 'privacy' && <Privacy onNavigate={navigate} />}
         {currentPage === 'terms' && <Terms onNavigate={navigate} />}
         {currentPage === 'service-detail' && selectedServiceId && (
