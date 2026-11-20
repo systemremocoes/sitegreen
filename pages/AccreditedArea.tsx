@@ -38,6 +38,8 @@ import {
   safeExternalUrl,
   EdgeFunctionError,
   fetchCredenciadoRemocoes,
+  credenciadoEnviarCodigo,
+  CredenciadoPlano,
   PortalSolicitacao
 } from '../lib/remocoesPro';
 
@@ -65,6 +67,9 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
   const [session, setSession] = useState<CredenciadoLoginResult | null>(null);
   const [docInput, setDocInput] = useState('');
   const [contractInput, setContractInput] = useState('');
+  const [codeRequesting, setCodeRequesting] = useState(false);
+  const [codeMessage, setCodeMessage] = useState('');
+  const [plano, setPlano] = useState<CredenciadoPlano | null>(null);
   const [loginError, setLoginError] = useState('');
   const [loginLoading, setLoginLoading] = useState(false);
 
@@ -120,6 +125,7 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
       try {
         const res = await fetchCredenciadoRemocoes(token);
         setSolicitacoes(res.solicitacoes);
+        setPlano(res.plano);
       } catch (err: any) {
         if (err instanceof EdgeFunctionError && (err.status === 401 || err.status === 403)) {
           handleLogout();
@@ -134,8 +140,9 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
     [handleLogout]
   );
 
+  // Carrega ao entrar (o plano aparece na Visão Geral) e de novo ao abrir a aba de remoções.
   useEffect(() => {
-    if (session?.token && activeTab === 'history') {
+    if (session?.token && (activeTab === 'history' || activeTab === 'overview')) {
       loadHistory(session.token);
     }
   }, [session?.token, activeTab, loadHistory]);
@@ -185,6 +192,25 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
       setLoginError(err?.message || 'Credenciais inválidas ou contrato inativo.');
     } finally {
       setLoginLoading(false);
+    }
+  };
+
+  const handleRequestCode = async () => {
+    const digits = docInput.replace(/\D/g, '');
+    if (digits.length !== 11 && digits.length !== 14) {
+      setLoginError('Informe o CPF ou CNPJ do titular para receber um novo código.');
+      return;
+    }
+    setLoginError('');
+    setCodeMessage('');
+    setCodeRequesting(true);
+    try {
+      const res = await credenciadoEnviarCodigo(digits);
+      setCodeMessage(res.message);
+    } catch (err: any) {
+      setLoginError(err?.message || 'Não foi possível enviar o código agora.');
+    } finally {
+      setCodeRequesting(false);
     }
   };
 
@@ -304,6 +330,17 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
                   placeholder="Ex.: ABCDE-12345 (fornecido pela Green)"
                   className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 outline-none bg-slate-50 focus:bg-white text-sm"
                 />
+                <button
+                  type="button"
+                  onClick={handleRequestCode}
+                  disabled={codeRequesting}
+                  className="text-xs font-bold text-emerald-700 hover:underline disabled:opacity-50"
+                >
+                  {codeRequesting ? 'Enviando…' : 'Esqueceu o código? Gerar novo código por e-mail'}
+                </button>
+                {codeMessage && (
+                  <p className="text-xs text-emerald-800 bg-emerald-50 border border-emerald-100 rounded-lg p-2.5">{codeMessage}</p>
+                )}
               </div>
 
               <button
@@ -408,6 +445,47 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
           {/* TAB 1: OVERVIEW */}
           {activeTab === 'overview' && (
             <div className="space-y-6 animate-fadeIn">
+              {plano && (
+                <div className="p-5 rounded-2xl border border-emerald-200 bg-white flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold uppercase tracking-wider text-emerald-700">Meu plano</p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="text-xl font-extrabold text-[#0a2619]">{plano.nome}</h3>
+                      <span
+                        className={`text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border ${
+                          plano.status === 'Ativo'
+                            ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                            : plano.status === 'Suspenso'
+                              ? 'bg-amber-50 text-amber-800 border-amber-200'
+                              : 'bg-slate-100 text-slate-600 border-slate-200'
+                        }`}
+                      >
+                        {plano.status}
+                      </span>
+                    </div>
+                    {plano.descricao && <p className="text-xs text-slate-500 mt-0.5">{plano.descricao}</p>}
+                    <p className="text-xs text-slate-600 mt-1">
+                      {formatBRL(plano.valor_mensal)}/mês • vencimento todo dia {plano.dia_vencimento}
+                      {plano.tipos_cobertos?.length ? ` • cobre: ${plano.tipos_cobertos.join(', ')}` : ''}
+                    </p>
+                  </div>
+                  <div className="shrink-0 text-left md:text-right">
+                    <p className="text-xs font-bold uppercase tracking-wider text-slate-500">Remoções neste mês</p>
+                    <p className="text-2xl font-extrabold text-[#0a2619]">
+                      {plano.usadas_mes}
+                      {plano.remocoes_incluidas !== null && <span className="text-base text-slate-400"> / {plano.remocoes_incluidas}</span>}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      {plano.remocoes_incluidas === null
+                        ? 'Remoções ilimitadas'
+                        : plano.restantes_mes && plano.restantes_mes > 0
+                          ? `${plano.restantes_mes} restante(s) na franquia`
+                          : `Franquia usada • excedente ${formatBRL(plano.valor_excedente)} por remoção`}
+                    </p>
+                  </div>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="p-5 rounded-xl bg-emerald-50 border border-emerald-100">
                   <p className="text-xs font-bold uppercase tracking-wider text-emerald-700 mb-1">Em Aberto</p>

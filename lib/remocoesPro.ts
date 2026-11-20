@@ -482,11 +482,30 @@ export interface CredenciadoRemocao {
   faturada: boolean;
 }
 
+export interface CredenciadoPlano {
+  nome: string | null;
+  descricao: string | null;
+  status: string;
+  inicio: string | null;
+  dia_vencimento: number;
+  valor_mensal: number;
+  remocoes_incluidas: number | null;
+  valor_excedente: number;
+  tipos_cobertos: string[];
+  usadas_mes: number;
+  restantes_mes: number | null;
+}
+
 export async function fetchCredenciadoRemocoes(
   token: string
-): Promise<{ solicitacoes: PortalSolicitacao[]; remocoes: CredenciadoRemocao[] }> {
+): Promise<{ solicitacoes: PortalSolicitacao[]; remocoes: CredenciadoRemocao[]; plano: CredenciadoPlano | null }> {
   const res = await callEdgeFunction<any>('credenciado-remocoes', { token }, token);
-  return { solicitacoes: res.solicitacoes || [], remocoes: res.remocoes || [] };
+  return { solicitacoes: res.solicitacoes || [], remocoes: res.remocoes || [], plano: res.plano || null };
+}
+
+/** O credenciado pede um novo código de acesso (enviado ao e-mail cadastrado no contrato). */
+export async function credenciadoEnviarCodigo(cpfCnpj: string): Promise<{ message: string }> {
+  return callEdgeFunction('credenciado-login', { action: 'enviar-codigo', cpfCnpj: normalizeDigits(cpfCnpj) });
 }
 
 // ============================================================
