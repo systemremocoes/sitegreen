@@ -19,6 +19,7 @@ import { Page } from '../App';
 import {
   fetchRemovalTracking,
   openRemovalDocument,
+  TrackingCodeRequiredError,
   normalizeDigits,
   NormalizedTracking
 } from '../lib/remocoesPro';
@@ -39,18 +40,28 @@ const ClientArea: React.FC<ClientAreaProps> = ({
   const [trackingResult, setTrackingResult] = useState<NormalizedTracking | { error: string } | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [downloadingDoc, setDownloadingDoc] = useState<string | null>(null);
+  // Segunda etapa: código enviado ao e-mail cadastrado na solicitação
+  const [codeStep, setCodeStep] = useState<string | null>(null);
+  const [codeInput, setCodeInput] = useState('');
 
-  const searchProtocol = async (code: string, verif: string) => {
+  const searchProtocol = async (code: string, verif: string, codigo?: string) => {
     setIsSearching(true);
     setTrackingResult(null);
     setTrackingCode(code);
     setVerifier(verif);
 
     try {
-      const data = await fetchRemovalTracking(code, verif);
+      const data = await fetchRemovalTracking(code, verif, codigo ? { codigo } : {});
       setTrackingResult(data);
+      setCodeStep(null);
+      setCodeInput('');
     } catch (error: any) {
-      setTrackingResult({ error: error.message || 'Protocolo não encontrado ou dados incorretos.' });
+      if (error instanceof TrackingCodeRequiredError) {
+        setCodeStep(error.message);
+        setCodeInput('');
+      } else {
+        setTrackingResult({ error: error.message || 'Protocolo não encontrado ou dados incorretos.' });
+      }
     } finally {
       setIsSearching(false);
     }
@@ -64,13 +75,15 @@ const ClientArea: React.FC<ClientAreaProps> = ({
 
   const handleTrackingSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    await searchProtocol(trackingCode, verifier);
+    await searchProtocol(trackingCode, verifier, codeStep ? codeInput : undefined);
   };
 
   const handleClearSession = () => {
     setTrackingCode('');
     setVerifier('');
     setTrackingResult(null);
+    setCodeStep(null);
+    setCodeInput('');
   };
 
   return (
@@ -117,7 +130,7 @@ const ClientArea: React.FC<ClientAreaProps> = ({
                 Consultar Remoção & Recibos
               </h2>
               <p className="text-slate-600 text-center mb-6 text-sm">
-                Por segurança (LGPD), informe o <strong>Protocolo</strong> e o <strong>Telefone ou CPF</strong> do solicitante.
+                Por segurança (LGPD), informe o <strong>Protocolo</strong> e o <strong>Telefone ou CPF</strong> do solicitante. Depois, confirme com o código enviado ao e-mail cadastrado.
               </p>
 
               <form onSubmit={handleTrackingSearch} className="w-full space-y-4">
@@ -127,6 +140,7 @@ const ClientArea: React.FC<ClientAreaProps> = ({
                     <input
                       type="text"
                       required
+                      disabled={!!codeStep}
                       placeholder="Ex: REM123"
                       value={trackingCode}
                       onChange={(e) => setTrackingCode(e.target.value)}
@@ -142,6 +156,7 @@ const ClientArea: React.FC<ClientAreaProps> = ({
                     <input
                       type="text"
                       required
+                      disabled={!!codeStep}
                       placeholder="(19) 99999-9999 ou 000.000.000-00"
                       value={verifier}
                       onChange={(e) => setVerifier(e.target.value)}
@@ -151,12 +166,38 @@ const ClientArea: React.FC<ClientAreaProps> = ({
                   </div>
                 </div>
 
+                {codeStep && (
+                  <div className="space-y-2">
+                    <p className="text-xs text-emerald-800 bg-emerald-50 border border-emerald-100 rounded-lg p-2.5">{codeStep}</p>
+                    <label className="text-xs font-semibold text-slate-600">Código recebido por e-mail *</label>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
+                      required
+                      maxLength={6}
+                      value={codeInput}
+                      onChange={(e) => setCodeInput(e.target.value.replace(/D/g, '').slice(0, 6))}
+                      placeholder="••••••"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 outline-none text-center text-2xl font-bold tracking-[0.5em] text-[#0a2619]"
+                    />
+                    <div className="flex justify-between text-xs font-bold">
+                      <button type="button" disabled={isSearching} onClick={() => searchProtocol(trackingCode, verifier)} className="text-emerald-700 hover:underline disabled:opacity-50">
+                        Reenviar código
+                      </button>
+                      <button type="button" onClick={handleClearSession} className="text-slate-500 hover:underline">
+                        Corrigir protocolo/CPF
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 <button
                   type="submit"
-                  disabled={isSearching}
+                  disabled={isSearching || (!!codeStep && codeInput.length !== 6)}
                   className="w-full bg-[#0a2619] text-white py-3.5 rounded-xl font-bold text-sm hover:bg-emerald-900 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                 >
-                  <span>{isSearching ? 'Validando no Remoções Pro...' : 'Validar e Consultar'}</span>
+                  <span>{isSearching ? 'Validando no Remoções Pro...' : codeStep ? 'Confirmar código e consultar' : 'Validar e Consultar'}</span>
                   {!isSearching && <ArrowRight size={16} />}
                 </button>
               </form>
@@ -268,7 +309,7 @@ const ClientArea: React.FC<ClientAreaProps> = ({
                             onClick={async () => {
                               try {
                                 setDownloadingDoc(doc.key);
-                                await openRemovalDocument(trackingResult.protocol, doc.key, verifier);
+                                await openRemovalDocument(trackingResult.protocol, doc.key, verifier, { accessToken: trackingResult.accessToken });
                               } catch (err: any) {
                                 alert(err?.message || 'Documento indisponível no momento.');
                               } finally {

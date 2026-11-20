@@ -273,7 +273,7 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
     setSearchCode(codeToSearch);
     try {
       const verifier = session?.credenciado.cnpj || session?.credenciado.phone || '';
-      const data = await fetchRemovalTracking(codeToSearch, verifier);
+      const data = await fetchRemovalTracking(codeToSearch, verifier, { credenciadoToken: session?.token });
       setTrackingData(data);
     } catch (err: any) {
       setTrackingData({ error: err.message || 'Protocolo não encontrado.' });
@@ -938,13 +938,13 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
                         </div>
                         <div className="flex flex-wrap gap-2">
                           <button
-                            onClick={() => openRemovalDocument(trackingData.protocol, 'proposal', cred.cnpj)}
+                            onClick={() => openRemovalDocument(trackingData.protocol, 'proposal', cred.cnpj, { credenciadoToken: session.token }).catch((err) => alert(err?.message || 'Documento indisponível no momento.'))}
                             className="px-3.5 py-2 rounded-xl bg-white border border-emerald-200 text-xs font-bold text-emerald-800 hover:bg-emerald-100"
                           >
                             Ver Proposta
                           </button>
                           <button
-                            onClick={() => openRemovalDocument(trackingData.protocol, 'fatura', cred.cnpj)}
+                            onClick={() => openRemovalDocument(trackingData.protocol, 'fatura', cred.cnpj, { credenciadoToken: session.token }).catch((err) => alert(err?.message || 'Documento indisponível no momento.'))}
                             className="px-3.5 py-2 rounded-xl bg-white border border-emerald-200 text-xs font-bold text-emerald-800 hover:bg-emerald-100"
                           >
                             Ver Fatura

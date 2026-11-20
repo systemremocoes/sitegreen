@@ -48,6 +48,8 @@ export interface NormalizedTracking {
   vehicle: string;
   updatedAt: string;
   history: TrackingTimelineItem[];
+  /** Acesso liberado após o código (para abrir proposta/fatura sem pedir de novo) */
+  accessToken?: string | null;
 }
 
 export interface CredenciadoProfile {
@@ -302,7 +304,26 @@ export async function submitQuotationToRemocoesPro(data: QuotationPayload): Prom
   }
 }
 
-export async function fetchRemovalTracking(protocol: string, verifier: string): Promise<NormalizedTracking> {
+/** A consulta exige o código enviado ao e-mail da solicitação (segunda etapa de segurança). */
+export class TrackingCodeRequiredError extends Error {
+  email: string;
+  constructor(message: string, email: string) {
+    super(message);
+    this.name = 'TrackingCodeRequiredError';
+    this.email = email;
+  }
+}
+
+export interface TrackingAuth {
+  /** Código de 6 dígitos recebido por e-mail */
+  codigo?: string;
+  /** Acesso já liberado (devolvido após o código; vale 1 hora) */
+  accessToken?: string | null;
+  /** Credenciado logado no portal */
+  credenciadoToken?: string | null;
+}
+
+export async function fetchRemovalTracking(protocol: string, verifier: string, auth: TrackingAuth = {}): Promise<NormalizedTracking> {
   const token = import.meta.env.VITE_SITE_TOKEN || '';
   const trimmedProtocol = protocol.trim();
   const verifierDigits = normalizeDigits(verifier);
@@ -319,8 +340,15 @@ export async function fetchRemovalTracking(protocol: string, verifier: string): 
     protocol: trimmedProtocol,
     verifier: verifierDigits,
     contactPhone: verifierDigits,
-    cpf: verifierDigits.length >= 11 ? verifierDigits : ''
+    cpf: verifierDigits.length >= 11 ? verifierDigits : '',
+    ...(auth.codigo ? { codigo: normalizeDigits(auth.codigo) } : {}),
+    ...(auth.accessToken ? { accessToken: auth.accessToken } : {}),
+    ...(auth.credenciadoToken ? { credenciadoToken: auth.credenciadoToken } : {})
   });
+
+  if (res?.requires_code) {
+    throw new TrackingCodeRequiredError(res.message || 'Enviamos um código para o e-mail cadastrado.', res.email || '');
+  }
 
   const d = res?.data || res;
   if (!d || (!d.protocol && !d.id)) {
@@ -351,14 +379,16 @@ export async function fetchRemovalTracking(protocol: string, verifier: string): 
     patient: d.patient_name || '—',
     vehicle: d.ambulance || 'Aguardando despacho',
     updatedAt: formatIsoDateTime(d.updated_at),
-    history
+    history,
+    accessToken: res?.access_token || auth.accessToken || null
   };
 }
 
 export async function openRemovalDocument(
   protocol: string,
   docType: 'proposal' | 'invoice' | 'receipt' | 'fatura',
-  verifier: string
+  verifier: string,
+  auth: TrackingAuth = {}
 ): Promise<void> {
   const token = import.meta.env.VITE_SITE_TOKEN || '';
   const verifierDigits = normalizeDigits(verifier);
@@ -370,12 +400,19 @@ export async function openRemovalDocument(
   const endpoint = docType === 'proposal' ? 'view-proposal' : 'view-invoice';
   const mappedDocType = docType === 'invoice' ? 'fatura' : docType;
 
+  const authFields = {
+    ...(auth.accessToken ? { accessToken: auth.accessToken } : {}),
+    ...(auth.credenciadoToken ? { credenciadoToken: auth.credenciadoToken } : {})
+  };
   const body =
     docType === 'proposal'
-      ? { token, protocol, verifier: verifierDigits }
-      : { token, protocol, verifier: verifierDigits, docType: mappedDocType };
+      ? { token, protocol, verifier: verifierDigits, ...authFields }
+      : { token, protocol, verifier: verifierDigits, docType: mappedDocType, ...authFields };
 
   const res = await callEdgeFunction<any>(endpoint, body);
+  if (res?.requires_code) {
+    throw new TrackingCodeRequiredError('Consulte o protocolo novamente e informe o código enviado por e-mail para abrir o documento.', res.email || '');
+  }
   const d = res?.data || res;
 
   const pdfUrl = safeExternalUrl(d?.boleto_pdf_url);

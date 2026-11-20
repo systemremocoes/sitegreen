@@ -26,7 +26,8 @@ import {
 import {
   submitQuotationToRemocoesPro,
   fetchRemovalTracking,
-  openRemovalDocument
+  openRemovalDocument,
+  TrackingCodeRequiredError
 } from '../lib/remocoesPro';
 
 interface ScheduleProps {
@@ -157,20 +158,35 @@ const Schedule: React.FC<ScheduleProps> = ({ initialTab = 'schedule' }) => {
     });
   };
 
-  const handleTrackingSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Segunda etapa da consulta: código enviado ao e-mail cadastrado na solicitação
+  const [trackCodeStep, setTrackCodeStep] = useState<string | null>(null);
+  const [trackCodeInput, setTrackCodeInput] = useState('');
+
+  const runTrackingSearch = async (codigo?: string) => {
     setIsSearching(true);
     setTrackingResult(null);
 
     try {
-      const data = await fetchRemovalTracking(trackingCode, trackingVerifier);
+      const data = await fetchRemovalTracking(trackingCode, trackingVerifier, codigo ? { codigo } : {});
       setTrackingResult(data);
+      setTrackCodeStep(null);
+      setTrackCodeInput('');
     } catch (error: any) {
-      console.error(error);
-      setTrackingResult({ error: error.message || 'Protocolo não encontrado ou dados de verificação incorretos.' });
+      if (error instanceof TrackingCodeRequiredError) {
+        setTrackCodeStep(error.message);
+        setTrackCodeInput('');
+      } else {
+        console.error(error);
+        setTrackingResult({ error: error.message || 'Protocolo não encontrado ou dados de verificação incorretos.' });
+      }
     } finally {
       setIsSearching(false);
     }
+  };
+
+  const handleTrackingSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await runTrackingSearch(trackCodeStep ? trackCodeInput : undefined);
   };
 
   return (
@@ -505,15 +521,40 @@ const Schedule: React.FC<ScheduleProps> = ({ initialTab = 'schedule' }) => {
                       required
                       placeholder="Telefone (com DDD) ou CPF do solicitante"
                       value={trackingVerifier}
+                      disabled={!!trackCodeStep}
                       onChange={(e) => setTrackingVerifier(e.target.value)}
                       className="w-full text-center text-sm font-medium px-5 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 outline-none bg-slate-50 focus:bg-white"
                     />
+                    {trackCodeStep && (
+                      <div className="space-y-2">
+                        <p className="text-xs text-emerald-800 bg-emerald-50 border border-emerald-100 rounded-lg p-2.5">{trackCodeStep}</p>
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          autoComplete="one-time-code"
+                          required
+                          maxLength={6}
+                          value={trackCodeInput}
+                          onChange={(e) => setTrackCodeInput(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                          placeholder="Código do e-mail"
+                          className="w-full text-center text-2xl font-bold tracking-[0.4em] px-5 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 outline-none bg-slate-50 focus:bg-white"
+                        />
+                        <div className="flex justify-between text-xs font-bold">
+                          <button type="button" disabled={isSearching} onClick={() => runTrackingSearch()} className="text-emerald-700 hover:underline disabled:opacity-50">
+                            Reenviar código
+                          </button>
+                          <button type="button" onClick={() => { setTrackCodeStep(null); setTrackCodeInput(''); }} className="text-slate-500 hover:underline">
+                            Corrigir dados
+                          </button>
+                        </div>
+                      </div>
+                    )}
                     <button
                       type="submit"
-                      disabled={isSearching}
+                      disabled={isSearching || (!!trackCodeStep && trackCodeInput.length !== 6)}
                       className="w-full bg-[#0a2619] text-white py-3.5 rounded-xl font-bold text-sm hover:bg-emerald-900 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                     >
-                      <span>{isSearching ? 'Validando...' : 'Localizar Transporte'}</span>
+                      <span>{isSearching ? 'Validando...' : trackCodeStep ? 'Confirmar código' : 'Localizar Transporte'}</span>
                       {!isSearching && <ArrowRight size={16} />}
                     </button>
                   </form>
@@ -617,7 +658,7 @@ const Schedule: React.FC<ScheduleProps> = ({ initialTab = 'schedule' }) => {
                                 onClick={async () => {
                                   try {
                                     setDownloadingDoc(idx);
-                                    await openRemovalDocument(trackingResult.protocol, doc.key, trackingVerifier);
+                                    await openRemovalDocument(trackingResult.protocol, doc.key, trackingVerifier, { accessToken: trackingResult.accessToken });
                                   } catch (err: any) {
                                     alert(err?.message || 'Documento indisponível no momento.');
                                   } finally {
