@@ -72,8 +72,11 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
   const [codeMessage, setCodeMessage] = useState('');
   const [plano, setPlano] = useState<CredenciadoPlano | null>(null);
   // Titular do plano (cadastro do sistema) e para quem é a remoção
-  const [titular, setTitular] = useState<CredenciadoTitular | null>(null);
-  const [paraQuem, setParaQuem] = useState<'titular' | 'outro'>('titular');
+  // Pessoas do plano (titular + dependentes do plano familiar): a remoção só pode ser para uma delas
+  const [beneficiarios, setBeneficiarios] = useState<CredenciadoTitular[]>([]);
+  const [selectedBenefId, setSelectedBenefId] = useState<string>('');
+  const pessoaSel = beneficiarios.find((b) => b.id === selectedBenefId) || null;
+  const temPlano = beneficiarios.length > 0;
   const [loginError, setLoginError] = useState('');
   const [loginLoading, setLoginLoading] = useState(false);
 
@@ -130,7 +133,7 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
         const res = await fetchCredenciadoRemocoes(token);
         setSolicitacoes(res.solicitacoes);
         setPlano(res.plano);
-        setTitular(res.titular);
+        setBeneficiarios(res.beneficiarios || []);
       } catch (err: any) {
         if (err instanceof EdgeFunctionError && (err.status === 401 || err.status === 403)) {
           handleLogout();
@@ -219,25 +222,25 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
     }
   };
 
-  // "Para mim": preenche com os dados do titular cadastrado no sistema; "Outro paciente": campos em branco.
-  const aplicarParaQuem = useCallback((modo: 'titular' | 'outro', t: CredenciadoTitular | null) => {
-    if (modo === 'titular' && t) {
-      setPatientName(t.nome || '');
-      setPatientAge(t.idade || '');
-      setContactPhone(t.telefone || '');
-      setOrigin(t.endereco || '');
-    } else {
-      setPatientName('');
-      setPatientAge('');
-      setContactPhone(t?.telefone || ''); // o responsável continua sendo o titular
-      setOrigin('');
-    }
+  // Preenche o formulário com os dados do cadastro da pessoa escolhida (titular ou dependente).
+  const aplicarPessoa = useCallback((p: CredenciadoTitular | null, titularPhone: string) => {
+    if (!p) return;
+    setPatientName(p.nome || '');
+    setPatientAge(p.idade || '');
+    setContactPhone(p.telefone || titularPhone || '');
+    setOrigin(p.endereco || '');
   }, []);
 
+  // Seleciona o titular por padrão quando a lista chega (ou a pessoa escolhida saiu do plano).
   useEffect(() => {
-    if (titular) aplicarParaQuem(paraQuem, titular);
-    else setParaQuem('outro');
-  }, [titular, paraQuem, aplicarParaQuem]);
+    if (beneficiarios.length && !beneficiarios.some((b) => b.id === selectedBenefId)) {
+      setSelectedBenefId(beneficiarios[0].id);
+    }
+  }, [beneficiarios, selectedBenefId]);
+
+  useEffect(() => {
+    aplicarPessoa(pessoaSel, beneficiarios[0]?.telefone || '');
+  }, [selectedBenefId, beneficiarios, aplicarPessoa]);
 
   const handleCopy = (id: string, text: string) => {
     navigator.clipboard.writeText(text);
@@ -247,6 +250,10 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
 
   const handleRequestRemoval = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (temPlano && !pessoaSel) {
+      alert('Selecione para quem é a remoção (pessoas cadastradas no seu plano).');
+      return;
+    }
     if (!patientName.trim() || !origin.trim() || !destination.trim() || !contactPhone.trim()) {
       alert('Preencha paciente, telefone, origem e destino.');
       return;
@@ -267,7 +274,7 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
       serviceType,
       source: 'portal_credenciado',
       credenciadoToken: session?.token,
-      paraTitular: paraQuem === 'titular' && !!titular
+      beneficiarioId: temPlano && pessoaSel ? pessoaSel.id : undefined
     });
     setSubmitting(false);
 
@@ -282,7 +289,7 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
       setProtocols(getAccreditedProtocols());
       setDestination('');
       setObservations('');
-      aplicarParaQuem(paraQuem, titular);
+      aplicarPessoa(pessoaSel, beneficiarios[0]?.telefone || '');
     } else {
       const msg = encodeURIComponent(
         `*Solicitação Credenciado (${session?.credenciado.name} - ${session?.credenciado.cnpj})*\n\n*Paciente:* ${patientName}\n*Telefone:* ${contactPhone}\n*Origem:* ${origin}\n*Destino:* ${destination}\n*Tipo:* ${serviceType}`
@@ -795,33 +802,32 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
                 </div>
               ) : (
                 <form onSubmit={handleRequestRemoval} className="space-y-4">
-                  {titular && (
+                  {temPlano && (
                     <div className="space-y-2">
-                      <p className="text-xs font-bold uppercase tracking-wider text-slate-500">Para quem é a remoção?</p>
+                      <p className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                        Para quem é a remoção? {plano?.tipo === 'Familiar' ? '(pessoas do seu plano familiar)' : '(plano individual)'}
+                      </p>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {([
-                          { id: 'titular' as const, title: 'Para mim (titular do plano)', desc: titular.nome },
-                          { id: 'outro' as const, title: 'Para outro paciente', desc: 'Preencher os dados do paciente' }
-                        ]).map((op) => (
+                        {beneficiarios.map((b) => (
                           <button
-                            key={op.id}
+                            key={b.id}
                             type="button"
-                            onClick={() => setParaQuem(op.id)}
+                            onClick={() => setSelectedBenefId(b.id)}
                             className={`text-left p-4 rounded-xl border-2 transition-all ${
-                              paraQuem === op.id ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 hover:border-emerald-200'
+                              selectedBenefId === b.id ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 hover:border-emerald-200'
                             }`}
                           >
-                            <p className="font-bold text-sm text-[#0a2619]">{op.title}</p>
-                            <p className="text-xs text-slate-500 truncate">{op.desc}</p>
+                            <p className="font-bold text-sm text-[#0a2619] truncate">{b.nome}</p>
+                            <p className="text-xs text-slate-500">{b.titular ? 'Titular do plano' : b.parentesco}{b.idade ? ` • ${b.idade} anos` : ''}</p>
                           </button>
                         ))}
                       </div>
-                      {paraQuem === 'titular' && (
-                        <p className="text-xs text-emerald-800 bg-emerald-50 border border-emerald-100 rounded-lg p-2.5">
-                          Os dados do paciente vieram do seu cadastro. Confira a origem (vem com o seu endereço) e informe o destino.
-                          Para alterar nome, idade ou telefone, fale com a central.
-                        </p>
-                      )}
+                      <p className="text-xs text-emerald-800 bg-emerald-50 border border-emerald-100 rounded-lg p-2.5">
+                        Os dados do paciente vêm do cadastro do plano. Confira a origem (vem com o endereço cadastrado) e informe o destino.
+                        {plano?.tipo === 'Familiar'
+                          ? ' Para incluir outra pessoa no plano, fale com a central.'
+                          : ' Seu plano é individual: cobre somente o titular.'}
+                      </p>
                     </div>
                   )}
 
@@ -890,9 +896,9 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
                         type="text"
                         required
                         value={patientName}
-                        readOnly={paraQuem === 'titular' && !!titular}
+                        readOnly={temPlano}
                         onChange={(e) => setPatientName(e.target.value)}
-                        className={`w-full px-3.5 py-2.5 rounded-xl border border-slate-200 outline-none text-sm ${paraQuem === 'titular' && titular ? 'bg-slate-100 text-slate-600' : 'bg-slate-50 focus:bg-white focus:border-emerald-500'}`}
+                        className={`w-full px-3.5 py-2.5 rounded-xl border border-slate-200 outline-none text-sm ${temPlano ? 'bg-slate-100 text-slate-600' : 'bg-slate-50 focus:bg-white focus:border-emerald-500'}`}
                       />
                     </div>
                     <div className="space-y-1">
@@ -900,9 +906,9 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
                       <input
                         type="number"
                         value={patientAge}
-                        readOnly={paraQuem === 'titular' && !!titular && !!titular.idade}
+                        readOnly={temPlano && !!pessoaSel?.idade}
                         onChange={(e) => setPatientAge(e.target.value)}
-                        className={`w-full px-3.5 py-2.5 rounded-xl border border-slate-200 outline-none text-sm ${paraQuem === 'titular' && titular?.idade ? 'bg-slate-100 text-slate-600' : 'bg-slate-50 focus:bg-white focus:border-emerald-500'}`}
+                        className={`w-full px-3.5 py-2.5 rounded-xl border border-slate-200 outline-none text-sm ${temPlano && pessoaSel?.idade ? 'bg-slate-100 text-slate-600' : 'bg-slate-50 focus:bg-white focus:border-emerald-500'}`}
                       />
                     </div>
                   </div>

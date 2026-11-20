@@ -19,6 +19,8 @@ export interface QuotationPayload {
   credenciadoToken?: string;
   /** Credenciado pedindo para o próprio titular do plano (cadastro do sistema) */
   paraTitular?: boolean;
+  /** Pessoa do plano (titular ou beneficiário) para quem é a remoção */
+  beneficiarioId?: string;
 }
 
 export interface QuotationResult {
@@ -522,6 +524,7 @@ export interface CredenciadoRemocao {
 }
 
 export interface CredenciadoPlano {
+  tipo?: "Individual" | "Familiar";
   nome: string | null;
   descricao: string | null;
   status: string;
@@ -537,11 +540,13 @@ export interface CredenciadoPlano {
 
 /** Titular do plano, com os dados do cadastro no sistema (preenche a solicitação "para mim"). */
 export interface CredenciadoTitular {
+  id: string;
   nome: string;
   idade: string;
   telefone: string;
   endereco: string;
-  observacoes: string;
+  parentesco: string;
+  titular: boolean;
 }
 
 export async function fetchCredenciadoRemocoes(token: string): Promise<{
@@ -549,9 +554,10 @@ export async function fetchCredenciadoRemocoes(token: string): Promise<{
   remocoes: CredenciadoRemocao[];
   plano: CredenciadoPlano | null;
   titular: CredenciadoTitular | null;
+  beneficiarios: CredenciadoTitular[];
 }> {
   const res = await callEdgeFunction<any>('credenciado-remocoes', { token }, token);
-  return { solicitacoes: res.solicitacoes || [], remocoes: res.remocoes || [], plano: res.plano || null, titular: res.titular || null };
+  return { solicitacoes: res.solicitacoes || [], remocoes: res.remocoes || [], plano: res.plano || null, titular: res.titular || null, beneficiarios: res.beneficiarios || [] };
 }
 
 /** O credenciado pede um novo código de acesso (enviado ao e-mail cadastrado no contrato). */
