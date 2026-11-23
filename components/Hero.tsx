@@ -113,8 +113,8 @@ const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
             {/* Imagem Principal da Ambulância em Movimento */}
             <div className="relative z-10 w-full max-w-md">
               <img
-                src="/ambulance-sp.png"
-                alt="Ambulância Brasileira Green Emergências em São Paulo"
+                src="/ambulance-green.jpg"
+                alt="Ambulância Green Emergências Médicas"
                 className="w-full h-auto rounded-[3rem] shadow-2xl rotate-3 hover:rotate-0 transition-all duration-700 border-8 border-white object-cover aspect-[4/3]"
               />
               {/* Overlay suave para melhorar o contraste com os cards */}
