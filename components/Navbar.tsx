@@ -49,13 +49,20 @@ const Navbar: React.FC<NavbarProps> = ({ scrolled, navigate, onOpenQuickModal })
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center">
           <div className="flex items-center">
-            <button onClick={() => handleLinkClick('home')} className="flex items-center space-x-2 group">
-              <div className="relative w-9 h-9 bg-[#0a2619] rounded-lg flex items-center justify-center text-white group-hover:bg-emerald-800 transition-all">
-                <Activity size={20} className="text-emerald-400" />
+            <button onClick={() => handleLinkClick('home')} className="flex items-center space-x-2.5 group">
+              <img
+                src="/logo-green.svg"
+                alt="Logo Green Emergências Médicas"
+                className="w-10 h-10 rounded-full shrink-0 shadow-sm group-hover:scale-105 transition-transform"
+              />
+              <div className="flex flex-col text-left leading-none">
+                <span className="text-lg font-extrabold italic tracking-tight text-[#0a2619]">
+                  Green
+                </span>
+                <span className="text-[11px] font-semibold italic text-emerald-700 tracking-tight">
+                  Emergências Médicas
+                </span>
               </div>
-              <span className="text-xl font-black tracking-tight text-[#0a2619]">
-                GREEN<span className="text-emerald-600">EMERGÊNCIAS</span>
-              </span>
             </button>
           </div>
 

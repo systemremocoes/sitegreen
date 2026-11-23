@@ -14,13 +14,20 @@ const Footer: React.FC<FooterProps> = ({ navigate }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
           {/* Brand */}
           <div className="space-y-6">
-            <button onClick={() => navigate('home')} className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">
-                <Activity size={18} />
+            <button onClick={() => navigate('home')} className="flex items-center space-x-3 text-left">
+              <img
+                src="/logo-green.svg"
+                alt="Logo Green Emergências Médicas"
+                className="w-11 h-11 rounded-full shrink-0 shadow-sm"
+              />
+              <div className="flex flex-col leading-none">
+                <span className="text-xl font-extrabold italic text-white tracking-tight">
+                  Green
+                </span>
+                <span className="text-xs font-medium italic text-emerald-400 mt-0.5">
+                  Emergências Médicas
+                </span>
               </div>
-              <span className="text-xl font-extrabold text-white tracking-tight">
-                GREEN<span className="text-emerald-500">EMERGÊNCIAS</span>
-              </span>
             </button>
             <p className="leading-relaxed font-light text-sm">
               Líder regional em atendimento pré-hospitalar e transporte médico em Limeira e interior paulista. Sua segurança é nossa missão.
