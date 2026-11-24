@@ -23,15 +23,15 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({ isOpen, onClose, initialM
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4">
       <div
         className="absolute inset-0 bg-slate-950/65 backdrop-blur-sm transition-opacity"
         onClick={onClose}
       />
 
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl relative z-10 overflow-hidden animate-scaleIn max-h-[92vh] flex flex-col md:flex-row border border-slate-200">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl relative z-10 overflow-hidden animate-scaleIn max-h-[94vh] flex flex-col lg:flex-row border border-slate-200">
         {/* Painel Lateral Esquerdo (Resumo ao Vivo) */}
-        <div className="md:w-4/12 bg-[#0a2619] text-white p-6 flex flex-col justify-between shrink-0">
+        <div className="lg:w-[280px] bg-[#0a2619] text-white p-5 lg:p-6 flex flex-col justify-between shrink-0">
           <div>
             <div className="inline-flex items-center gap-2 bg-emerald-500/15 border border-emerald-400/25 px-2.5 py-1 rounded-full mb-4">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
@@ -47,7 +47,7 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({ isOpen, onClose, initialM
               Formulário único integrado diretamente ao sistema Remoções Pro.
             </p>
 
-            <div className="hidden md:block space-y-2 text-xs">
+            <div className="hidden lg:block space-y-2 text-xs">
               <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">
                 Resumo em Tempo Real
               </p>
@@ -82,14 +82,14 @@ const ScheduleModal: React.FC<ScheduleModalProps> = ({ isOpen, onClose, initialM
             </div>
           </div>
 
-          <div className="hidden md:flex items-center gap-1.5 text-[11px] text-emerald-100/60 pt-4 border-t border-white/10">
+          <div className="hidden lg:flex items-center gap-1.5 text-[11px] text-emerald-100/60 pt-4 border-t border-white/10">
             <ShieldCheck size={14} className="text-emerald-400 shrink-0" />
             <span>Sigilo médico • LGPD</span>
           </div>
         </div>
 
         {/* Painel Direito (Formulário Unificado) */}
-        <div className="md:w-8/12 p-6 overflow-y-auto">
+        <div className="flex-1 min-w-0 p-5 sm:p-6 lg:p-8 overflow-y-auto">
           <div className="flex items-center justify-between pb-3.5 mb-4 border-b border-slate-100">
             <div>
               <h4 className="text-base font-bold text-[#0a2619]">

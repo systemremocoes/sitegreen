@@ -9,10 +9,10 @@ interface ContactProps {
 const Contact: React.FC<ContactProps> = () => {
   return (
     <div className="py-16">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden flex flex-col lg:flex-row border border-slate-200">
           {/* Info Side */}
-          <div className="lg:w-4/12 bg-[#0a2619] p-8 md:p-10 text-white flex flex-col justify-between">
+          <div className="lg:w-[300px] shrink-0 bg-[#0a2619] p-8 md:p-10 text-white flex flex-col justify-between">
             <div>
               <span className="inline-flex items-center gap-2 bg-emerald-500/15 border border-emerald-400/25 text-emerald-300 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider mb-5">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
@@ -56,7 +56,7 @@ const Contact: React.FC<ContactProps> = () => {
           </div>
 
           {/* Form Side (Mesmo formulário unificado de remoção/evento) */}
-          <div className="lg:w-8/12 p-8 md:p-10">
+          <div className="flex-1 min-w-0 p-6 md:p-10">
             <div className="mb-5 pb-4 border-b border-slate-100">
               <h3 className="text-xl font-bold text-[#0a2619]">Solicitar Remoção</h3>
               <p className="text-xs text-slate-500 mt-0.5">
