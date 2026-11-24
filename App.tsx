@@ -15,7 +15,7 @@ import ClientAccount from './pages/ClientAccount';
 import Footer from './components/Footer';
 import WhatsAppButton from './components/WhatsAppButton';
 import ScheduleModal from './components/ScheduleModal';
-import EventQuoteModal from './components/EventQuoteModal';
+import { RequestFormMode } from './components/UnifiedRequestForm';
 
 export type Page =
   | 'home'
@@ -65,7 +65,12 @@ const App: React.FC = () => {
   const [selectedProtocol, setSelectedProtocol] = useState<string | null>(null);
   const [selectedVerifier, setSelectedVerifier] = useState<string | null>(null);
   const [isQuickModalOpen, setIsQuickModalOpen] = useState(false);
-  const [isEventModalOpen, setIsEventModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<RequestFormMode>('removal');
+
+  const openUnifiedModal = (mode: RequestFormMode = 'removal') => {
+    setModalMode(mode);
+    setIsQuickModalOpen(true);
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -121,25 +126,25 @@ const App: React.FC = () => {
         scrolled={scrolled}
         navigate={navigate}
         currentPage={currentPage}
-        onOpenQuickModal={() => setIsQuickModalOpen(true)}
-        onOpenEventModal={() => setIsEventModalOpen(true)}
+        onOpenQuickModal={() => openUnifiedModal('removal')}
+        onOpenEventModal={() => openUnifiedModal('event')}
       />
 
       <main className="flex-grow">
         {currentPage === 'home' && (
-          <Home onNavigate={navigate} onOpenRequestModal={() => setIsQuickModalOpen(true)} />
+          <Home onNavigate={navigate} onOpenRequestModal={() => openUnifiedModal('removal')} />
         )}
         {currentPage === 'about' && <About />}
         {currentPage === 'schedule' && <Schedule />}
         {currentPage === 'ambulances' && (
-          <Ambulances onNavigate={navigate} onOpenRequestModal={() => setIsQuickModalOpen(true)} />
+          <Ambulances onNavigate={navigate} onOpenRequestModal={() => openUnifiedModal('removal')} />
         )}
         {currentPage === 'plans' && <Plans onNavigate={navigate} />}
         {currentPage === 'client-portal' && (
           <ClientPortal
             onNavigate={navigate}
             onSelectRemovalLookup={handleSelectRemovalLookup}
-            onOpenRequestModal={() => setIsQuickModalOpen(true)}
+            onOpenRequestModal={() => openUnifiedModal('removal')}
           />
         )}
         {currentPage === 'client-area' && (
@@ -147,7 +152,7 @@ const App: React.FC = () => {
             onNavigate={navigate}
             initialProtocol={selectedProtocol}
             initialVerifier={selectedVerifier}
-            onOpenRequestModal={() => setIsQuickModalOpen(true)}
+            onOpenRequestModal={() => openUnifiedModal('removal')}
           />
         )}
         {currentPage === 'accredited-area' && <AccreditedArea onNavigate={navigate} />}
@@ -158,16 +163,19 @@ const App: React.FC = () => {
           <ServiceDetail
             serviceId={selectedServiceId}
             onNavigate={navigate}
-            onOpenRequestModal={() => setIsQuickModalOpen(true)}
-            onOpenEventModal={() => setIsEventModalOpen(true)}
+            onOpenRequestModal={() => openUnifiedModal('removal')}
+            onOpenEventModal={() => openUnifiedModal('event')}
           />
         )}
       </main>
 
       <Footer navigate={navigate} />
       <WhatsAppButton />
-      <ScheduleModal isOpen={isQuickModalOpen} onClose={() => setIsQuickModalOpen(false)} />
-      <EventQuoteModal isOpen={isEventModalOpen} onClose={() => setIsEventModalOpen(false)} />
+      <ScheduleModal
+        isOpen={isQuickModalOpen}
+        onClose={() => setIsQuickModalOpen(false)}
+        initialMode={modalMode}
+      />
     </div>
   );
 };
