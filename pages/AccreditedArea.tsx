@@ -40,6 +40,7 @@ import {
   fetchCredenciadoRemocoes,
   credenciadoEnviarCodigo,
   verificarCobrancaExtra,
+  responderCobrancaExtra,
   CobrancaExtraCheck,
   QuotationPayload,
   CredenciadoPlano,
@@ -76,6 +77,7 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
   const [plano, setPlano] = useState<CredenciadoPlano | null>(null);
   // Remoção fora do plano: aviso e aceite da cobrança à parte
   const [extraAviso, setExtraAviso] = useState<{ check: CobrancaExtraCheck; payload: QuotationPayload } | null>(null);
+  const [respondendoExtra, setRespondendoExtra] = useState<string | null>(null);
   // Titular do plano (cadastro do sistema) e para quem é a remoção
   // Pessoas do plano (titular + dependentes do plano familiar): a remoção só pode ser para uma delas
   const [beneficiarios, setBeneficiarios] = useState<CredenciadoTitular[]>([]);
@@ -246,6 +248,31 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
   useEffect(() => {
     aplicarPessoa(pessoaSel, beneficiarios[0]?.telefone || '');
   }, [selectedBenefId, beneficiarios, aplicarPessoa]);
+
+  // Credenciado aprova/recusa o orçamento enviado pela central para a remoção fora do plano.
+  const responderOrcamento = async (quotationId: string, acao: 'aceitar' | 'recusar', valor?: number | null) => {
+    if (!session?.token) return;
+    const pergunta = acao === 'aceitar'
+      ? `Aprovar o orçamento${valor ? ` de ${formatBRL(valor)}` : ''}? A remoção será agendada e o boleto gerado.`
+      : 'Recusar este orçamento? A solicitação será cancelada.';
+    if (!window.confirm(pergunta)) return;
+    setRespondendoExtra(quotationId);
+    try {
+      const res = await responderCobrancaExtra(session.token, quotationId, acao);
+      alert(res.message);
+      await loadHistory(session.token);
+      if (acao === 'aceitar') loadBoletos(session.token, boletoStatusFilter);
+    } catch (err: any) {
+      if (err instanceof EdgeFunctionError && err.status === 401) {
+        handleLogout();
+        setLoginError('Sua sessão expirou. Entre novamente.');
+        return;
+      }
+      alert(err?.message || 'Não foi possível registrar sua resposta agora.');
+    } finally {
+      setRespondendoExtra(null);
+    }
+  };
 
   const handleCopy = (id: string, text: string) => {
     navigator.clipboard.writeText(text);
@@ -841,18 +868,14 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
                           <p className="text-xs font-bold uppercase tracking-wider text-amber-700">
                             {extraAviso.check.motivo === 'excedente' ? 'Cota do plano utilizada' : 'Remoção não coberta pelo plano'}
                           </p>
-                          <h3 className="text-lg font-extrabold text-[#0a2619]">Esta remoção será cobrada à parte</h3>
+                          <h3 className="text-lg font-extrabold text-[#0a2619]">Esta remoção está fora do seu plano</h3>
                         </div>
                         <div className="p-5 space-y-3 text-sm text-slate-700">
                           <p>{extraAviso.check.mensagem}</p>
-                          {extraAviso.check.valor ? (
-                            <p className="text-2xl font-extrabold text-[#0a2619]">{formatBRL(extraAviso.check.valor)}</p>
-                          ) : (
-                            <p className="font-semibold">O valor será informado pela central antes de gerar o boleto.</p>
-                          )}
+                          <p className="font-semibold">O valor será calculado pela central (cotação) e enviado aqui para você aprovar.</p>
                           <p className="text-xs text-slate-500">
-                            Ao concordar, a solicitação vai para a central, que confirma o valor e gera o boleto. Ele aparecerá na aba
-                            "Boletos e Faturas".
+                            Você recebe um e-mail quando o orçamento estiver pronto. Em "Remoções Solicitadas", clique em
+                            "Aprovar e agendar": a remoção é agendada e o boleto aparece em "Boletos e Faturas".
                           </p>
                         </div>
                         <div className="px-5 py-4 border-t border-slate-100 flex flex-col sm:flex-row gap-2">
@@ -869,7 +892,7 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
                             onClick={() => enviarSolicitacao({ ...extraAviso.payload, aceiteCobrancaExtra: true })}
                             className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-bold text-sm disabled:opacity-50"
                           >
-                            {submitting ? 'Enviando…' : 'Concordo e solicitar'}
+                            {submitting ? 'Enviando…' : 'Solicitar cotação'}
                           </button>
                         </div>
                       </div>
@@ -1143,8 +1166,8 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
                             </span>
                             {item.cobranca_extra && (
                               <span className="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200">
-                                Cobrança à parte: {item.cobranca_extra.status === 'aguardando_aprovacao' ? 'aguardando central' : item.cobranca_extra.status === 'aprovada' ? (item.cobranca_extra.boleto_gerado ? 'boleto gerado' : 'aprovada') : 'recusada'}
-                                {item.cobranca_extra.valor ? ` (${formatBRL(item.cobranca_extra.valor)})` : ''}
+                                Fora do plano: {item.cobranca_extra.status === 'aguardando_aprovacao' ? 'aguardando cotação da central' : item.cobranca_extra.status === 'aguardando_cliente' ? 'orçamento disponível' : item.cobranca_extra.status === 'aprovada' ? (item.cobranca_extra.boleto_gerado ? 'aprovado • boleto gerado' : 'aprovado') : 'recusado'}
+                                {item.cobranca_extra.valor && item.cobranca_extra.status !== 'aguardando_aprovacao' ? ` (${formatBRL(item.cobranca_extra.valor)})` : ''}
                               </span>
                             )}
                           </div>
@@ -1154,6 +1177,32 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
                           <p className="text-xs text-slate-500 truncate">
                             {formatDateBR(item.data)} {item.hora ? `às ${String(item.hora).slice(0, 5)}` : ''} • {item.origem} → {item.destino}
                           </p>
+                          {item.cobranca_extra?.status === 'aguardando_cliente' && (
+                            <div className="mt-2 p-3 rounded-xl bg-amber-50 border border-amber-200 flex flex-col sm:flex-row sm:items-center gap-2">
+                              <p className="text-xs text-amber-900 flex-1">
+                                Orçamento da central: <strong className="text-base">{formatBRL(item.cobranca_extra.valor || 0)}</strong>. Ao aprovar,
+                                a remoção é agendada e o boleto é gerado.
+                              </p>
+                              <div className="flex gap-2 shrink-0">
+                                <button
+                                  type="button"
+                                  disabled={respondendoExtra === item.id}
+                                  onClick={() => responderOrcamento(item.id, 'recusar')}
+                                  className="px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-600 font-bold text-xs disabled:opacity-50"
+                                >
+                                  Recusar
+                                </button>
+                                <button
+                                  type="button"
+                                  disabled={respondendoExtra === item.id}
+                                  onClick={() => responderOrcamento(item.id, 'aceitar', item.cobranca_extra?.valor)}
+                                  className="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs disabled:opacity-50"
+                                >
+                                  {respondendoExtra === item.id ? 'Enviando…' : 'Aprovar e agendar'}
+                                </button>
+                              </div>
+                            </div>
+                          )}
                         </div>
                         <button
                           onClick={() => handleSearchProtocol(item.remocao?.protocolo || item.id)}

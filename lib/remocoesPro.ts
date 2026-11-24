@@ -322,6 +322,15 @@ export async function verificarCobrancaExtra(data: QuotationPayload): Promise<Co
   return { extra: !!res.extra, motivo: res.motivo ?? null, valor: res.valor ?? null, mensagem: res.mensagem ?? null };
 }
 
+/** Credenciado aprova (gera boleto e agenda a remoção) ou recusa o orçamento de remoção fora do plano. */
+export async function responderCobrancaExtra(
+  token: string,
+  quotationId: string,
+  acao: 'aceitar' | 'recusar'
+): Promise<{ message: string; remocao?: string }> {
+  return callEdgeFunction('credenciado-cobranca-extra', { token, quotation_id: quotationId, acao }, token);
+}
+
 export async function submitQuotationToRemocoesPro(data: QuotationPayload): Promise<QuotationResult> {
   const token = import.meta.env.VITE_SITE_TOKEN || '';
 
