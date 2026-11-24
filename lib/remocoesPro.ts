@@ -56,6 +56,8 @@ export interface QuotationPayload {
   paraTitular?: boolean;
   /** Pessoa do plano (titular ou beneficiário) para quem é a remoção */
   beneficiarioId?: string;
+  /** Credenciado aceitou pagar à parte a remoção fora do plano (acima da cota ou tipo não coberto) */
+  aceiteCobrancaExtra?: boolean;
 }
 
 export interface QuotationResult {
@@ -307,6 +309,19 @@ function formatIsoDateTime(iso: string | null | undefined): string {
   }
 }
 
+export interface CobrancaExtraCheck {
+  extra: boolean;
+  motivo: 'excedente' | 'nao_coberto' | null;
+  valor: number | null;
+  mensagem: string | null;
+}
+
+/** Verifica, sem gravar nada, se a remoção do credenciado está fora do plano (cota do mês ou tipo não coberto). */
+export async function verificarCobrancaExtra(data: QuotationPayload): Promise<CobrancaExtraCheck> {
+  const res = await callEdgeFunction<any>('create-quotation', { ...data, precheck: true });
+  return { extra: !!res.extra, motivo: res.motivo ?? null, valor: res.valor ?? null, mensagem: res.mensagem ?? null };
+}
+
 export async function submitQuotationToRemocoesPro(data: QuotationPayload): Promise<QuotationResult> {
   const token = import.meta.env.VITE_SITE_TOKEN || '';
 
@@ -536,6 +551,8 @@ export interface PortalSolicitacao {
   tipo_remocao: string;
   status: string;
   remocao: PortalRemocaoResumo | null;
+  /** Cobrança extra do credenciado (remoção fora do plano) */
+  cobranca_extra?: { motivo: 'excedente' | 'nao_coberto'; valor: number | null; status: string; boleto_gerado: boolean } | null;
   // Somente na Área do Cliente
   valor?: number | null;
   pode_aprovar?: boolean;

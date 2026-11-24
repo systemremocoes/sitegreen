@@ -39,6 +39,9 @@ import {
   EdgeFunctionError,
   fetchCredenciadoRemocoes,
   credenciadoEnviarCodigo,
+  verificarCobrancaExtra,
+  CobrancaExtraCheck,
+  QuotationPayload,
   CredenciadoPlano,
   CredenciadoTitular,
   PortalSolicitacao
@@ -71,6 +74,8 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
   const [codeRequesting, setCodeRequesting] = useState(false);
   const [codeMessage, setCodeMessage] = useState('');
   const [plano, setPlano] = useState<CredenciadoPlano | null>(null);
+  // Remoção fora do plano: aviso e aceite da cobrança à parte
+  const [extraAviso, setExtraAviso] = useState<{ check: CobrancaExtraCheck; payload: QuotationPayload } | null>(null);
   // Titular do plano (cadastro do sistema) e para quem é a remoção
   // Pessoas do plano (titular + dependentes do plano familiar): a remoção só pode ser para uma delas
   const [beneficiarios, setBeneficiarios] = useState<CredenciadoTitular[]>([]);
@@ -259,8 +264,7 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
       return;
     }
 
-    setSubmitting(true);
-    const result = await submitQuotationToRemocoesPro({
+    const payload: QuotationPayload = {
       origin: origin.trim(),
       destination: destination.trim(),
       date: date || new Date().toISOString().split('T')[0],
@@ -275,7 +279,35 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
       source: 'portal_credenciado',
       credenciadoToken: session?.token,
       beneficiarioId: temPlano && pessoaSel ? pessoaSel.id : undefined
-    });
+    };
+
+    // Plano com cota/cobertura: avisa antes de enviar se a remoção será cobrada à parte.
+    if (temPlano) {
+      setSubmitting(true);
+      try {
+        const check = await verificarCobrancaExtra(payload);
+        if (check.extra) {
+          setSubmitting(false);
+          setExtraAviso({ check, payload });
+          return;
+        }
+      } catch (err: any) {
+        setSubmitting(false);
+        if (err instanceof EdgeFunctionError && err.status === 401) {
+          handleLogout();
+          setLoginError('Sua sessão expirou. Entre novamente para solicitar a remoção.');
+          return;
+        }
+        alert(err?.message || 'Não foi possível verificar seu plano agora. Tente novamente.');
+        return;
+      }
+    }
+    await enviarSolicitacao(payload);
+  };
+
+  const enviarSolicitacao = async (payload: QuotationPayload) => {
+    setSubmitting(true);
+    const result = await submitQuotationToRemocoesPro(payload);
     setSubmitting(false);
 
     if (result.status === 401) {
@@ -284,7 +316,14 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
       return;
     }
 
+    // Erro de validação (ex.: plano suspenso, paciente fora do plano): mostra a mensagem em vez de abrir o WhatsApp.
+    if (!result.success && result.status && result.status < 500) {
+      alert(result.error || 'Não foi possível registrar a solicitação.');
+      return;
+    }
+
     if (result.success) {
+      setExtraAviso(null);
       setCreatedProtocol(result.protocol);
       setProtocols(getAccreditedProtocols());
       setDestination('');
@@ -795,6 +834,47 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
                 </div>
               ) : (
                 <form onSubmit={handleRequestRemoval} className="space-y-4">
+                  {extraAviso && (
+                    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
+                      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
+                        <div className="px-5 py-4 bg-amber-50 border-b border-amber-100">
+                          <p className="text-xs font-bold uppercase tracking-wider text-amber-700">
+                            {extraAviso.check.motivo === 'excedente' ? 'Cota do plano utilizada' : 'Remoção não coberta pelo plano'}
+                          </p>
+                          <h3 className="text-lg font-extrabold text-[#0a2619]">Esta remoção será cobrada à parte</h3>
+                        </div>
+                        <div className="p-5 space-y-3 text-sm text-slate-700">
+                          <p>{extraAviso.check.mensagem}</p>
+                          {extraAviso.check.valor ? (
+                            <p className="text-2xl font-extrabold text-[#0a2619]">{formatBRL(extraAviso.check.valor)}</p>
+                          ) : (
+                            <p className="font-semibold">O valor será informado pela central antes de gerar o boleto.</p>
+                          )}
+                          <p className="text-xs text-slate-500">
+                            Ao concordar, a solicitação vai para a central, que confirma o valor e gera o boleto. Ele aparecerá na aba
+                            "Boletos e Faturas".
+                          </p>
+                        </div>
+                        <div className="px-5 py-4 border-t border-slate-100 flex flex-col sm:flex-row gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setExtraAviso(null)}
+                            className="flex-1 bg-white border border-slate-200 text-slate-700 py-3 rounded-xl font-bold text-sm"
+                          >
+                            Cancelar
+                          </button>
+                          <button
+                            type="button"
+                            disabled={submitting}
+                            onClick={() => enviarSolicitacao({ ...extraAviso.payload, aceiteCobrancaExtra: true })}
+                            className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-bold text-sm disabled:opacity-50"
+                          >
+                            {submitting ? 'Enviando…' : 'Concordo e solicitar'}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   {temPlano && (
                     <div className="space-y-2">
                       <p className="text-xs font-bold uppercase tracking-wider text-slate-500">
@@ -1061,6 +1141,12 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
                             <span className="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-100">
                               {status}
                             </span>
+                            {item.cobranca_extra && (
+                              <span className="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200">
+                                Cobrança à parte: {item.cobranca_extra.status === 'aguardando_aprovacao' ? 'aguardando central' : item.cobranca_extra.status === 'aprovada' ? (item.cobranca_extra.boleto_gerado ? 'boleto gerado' : 'aprovada') : 'recusada'}
+                                {item.cobranca_extra.valor ? ` (${formatBRL(item.cobranca_extra.valor)})` : ''}
+                              </span>
+                            )}
                           </div>
                           <p className="font-semibold text-[#0a2619] text-sm truncate">
                             {item.paciente} • {item.tipo}
