@@ -15,6 +15,7 @@ import ClientAccount from './pages/ClientAccount';
 import Footer from './components/Footer';
 import WhatsAppButton from './components/WhatsAppButton';
 import ScheduleModal from './components/ScheduleModal';
+import EventQuoteModal from './components/EventQuoteModal';
 
 export type Page =
   | 'home'
@@ -64,6 +65,7 @@ const App: React.FC = () => {
   const [selectedProtocol, setSelectedProtocol] = useState<string | null>(null);
   const [selectedVerifier, setSelectedVerifier] = useState<string | null>(null);
   const [isQuickModalOpen, setIsQuickModalOpen] = useState(false);
+  const [isEventModalOpen, setIsEventModalOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -120,6 +122,7 @@ const App: React.FC = () => {
         navigate={navigate}
         currentPage={currentPage}
         onOpenQuickModal={() => setIsQuickModalOpen(true)}
+        onOpenEventModal={() => setIsEventModalOpen(true)}
       />
 
       <main className="flex-grow">
@@ -156,6 +159,7 @@ const App: React.FC = () => {
             serviceId={selectedServiceId}
             onNavigate={navigate}
             onOpenRequestModal={() => setIsQuickModalOpen(true)}
+            onOpenEventModal={() => setIsEventModalOpen(true)}
           />
         )}
       </main>
@@ -163,6 +167,7 @@ const App: React.FC = () => {
       <Footer navigate={navigate} />
       <WhatsAppButton />
       <ScheduleModal isOpen={isQuickModalOpen} onClose={() => setIsQuickModalOpen(false)} />
+      <EventQuoteModal isOpen={isEventModalOpen} onClose={() => setIsEventModalOpen(false)} />
     </div>
   );
 };

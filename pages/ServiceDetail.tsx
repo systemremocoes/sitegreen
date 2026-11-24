@@ -13,6 +13,7 @@ interface ServiceDetailProps {
   serviceId: string;
   onNavigate: (page: Page) => void;
   onOpenRequestModal?: () => void;
+  onOpenEventModal?: () => void;
 }
 
 const servicesData: Record<string, any> = {
@@ -108,7 +109,12 @@ const servicesData: Record<string, any> = {
   }
 };
 
-const ServiceDetail: React.FC<ServiceDetailProps> = ({ serviceId, onNavigate, onOpenRequestModal }) => {
+const ServiceDetail: React.FC<ServiceDetailProps> = ({
+  serviceId,
+  onNavigate,
+  onOpenRequestModal,
+  onOpenEventModal
+}) => {
   const service = servicesData[serviceId] || servicesData['uti'];
 
   return (
@@ -178,11 +184,19 @@ const ServiceDetail: React.FC<ServiceDetailProps> = ({ serviceId, onNavigate, on
                 </p>
                 <button
                   type="button"
-                  onClick={() => (onOpenRequestModal ? onOpenRequestModal() : onNavigate('schedule'))}
+                  onClick={() => {
+                    if (serviceId === 'eventos' && onOpenEventModal) {
+                      onOpenEventModal();
+                    } else if (onOpenRequestModal) {
+                      onOpenRequestModal();
+                    } else {
+                      onNavigate('schedule');
+                    }
+                  }}
                   className="w-full bg-emerald-500 hover:bg-emerald-400 text-[#0a2619] font-bold py-3.5 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 text-sm"
                 >
                   <Ambulance size={18} />
-                  <span>Solicitar Remoção / Orçamento</span>
+                  <span>{serviceId === 'eventos' ? 'Solicitar Cotação de Evento' : 'Solicitar Remoção / Orçamento'}</span>
                 </button>
               </div>
 

@@ -7,12 +7,13 @@ interface NavbarProps {
   navigate: (page: Page, serviceId?: string) => void;
   currentPage: Page;
   onOpenQuickModal?: () => void;
+  onOpenEventModal?: () => void;
 }
 
 const WHATSAPP_URL =
   'https://wa.me/5519998049901?text=Ol%C3%A1!%20Encontrei%20a%20Green%20no%20Google%20e%20gostaria%20de%20um%20or%C3%A7amento%20de%20ambul%C3%A2ncia.';
 
-const Navbar: React.FC<NavbarProps> = ({ scrolled, navigate, onOpenQuickModal }) => {
+const Navbar: React.FC<NavbarProps> = ({ scrolled, navigate, onOpenQuickModal, onOpenEventModal }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<'services' | 'request' | null>(null);
   const navRef = useRef<HTMLDivElement>(null);
@@ -141,6 +142,20 @@ const Navbar: React.FC<NavbarProps> = ({ scrolled, navigate, onOpenQuickModal })
                 </button>
 
                 <button
+                  onClick={() => {
+                    setOpenDropdown(null);
+                    onOpenEventModal?.();
+                  }}
+                  className="w-full text-left px-5 py-3 hover:bg-emerald-50 transition-colors flex items-start gap-3 border-t border-slate-100"
+                >
+                  <Activity size={18} className="text-emerald-600 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-bold text-[#0a2619]">Cotação para Eventos</p>
+                    <p className="text-xs text-slate-500">Shows, feiras e esportes</p>
+                  </div>
+                </button>
+
+                <button
                   onClick={() => handleLinkClick('plans')}
                   className="w-full text-left px-5 py-3 hover:bg-emerald-50 transition-colors flex items-start gap-3 border-t border-slate-100"
                 >
@@ -221,6 +236,15 @@ const Navbar: React.FC<NavbarProps> = ({ scrolled, navigate, onOpenQuickModal })
                 className="block w-full text-left text-[#0a2619] font-semibold text-sm py-1"
               >
                 Solicitar Remoção
+              </button>
+              <button
+                onClick={() => {
+                  setIsOpen(false);
+                  onOpenEventModal?.();
+                }}
+                className="block w-full text-left text-[#0a2619] font-semibold text-sm py-1"
+              >
+                Cotação para Eventos
               </button>
               <button onClick={() => handleLinkClick('plans')} className="block w-full text-left text-[#0a2619] font-semibold text-sm py-1">
                 Assinar Plano Mensal
