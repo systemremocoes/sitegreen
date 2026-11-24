@@ -126,7 +126,7 @@ const UnifiedRequestForm: React.FC<UnifiedRequestFormProps> = ({
 
   const handleCopyProtocol = () => {
     if (!protocol) return;
-    navigator.clipboard.writeText(protocol.split('-')[0].toUpperCase());
+    navigator.clipboard.writeText(protocol);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -158,7 +158,7 @@ const UnifiedRequestForm: React.FC<UnifiedRequestFormProps> = ({
               patientName: patientName.trim(),
               patientAge: patientAge.trim(),
               contactPhone: contactPhone.trim(),
-              email: '',
+              email: email.trim(),
               observations: observations.trim(),
               serviceType,
               source: `${sourcePrefix}_removal`
@@ -184,7 +184,16 @@ const UnifiedRequestForm: React.FC<UnifiedRequestFormProps> = ({
                 .filter(Boolean)
                 .join(' | '),
               serviceType: 'eventos',
-              source: `${sourcePrefix}_event`
+              source: `${sourcePrefix}_event`,
+              kind: 'evento' as const,
+              event: {
+                nome: eventName.trim(),
+                local: eventLocation.trim(),
+                tipo: eventType,
+                publico: audience,
+                duracao: duration,
+                estrutura: eventStructure
+              }
             };
 
       const result = await submitQuotationToRemocoesPro(payload);
@@ -221,8 +230,8 @@ const UnifiedRequestForm: React.FC<UnifiedRequestFormProps> = ({
             Protocolo de Atendimento
           </span>
           <div className="flex items-center justify-center gap-2">
-            <span className="text-lg font-extrabold text-[#0a2619] font-mono">
-              {protocol.split('-')[0].toUpperCase()}
+            <span className="text-xs sm:text-sm font-extrabold text-[#0a2619] font-mono break-all">
+              {protocol}
             </span>
             <button
               type="button"
@@ -349,6 +358,23 @@ const UnifiedRequestForm: React.FC<UnifiedRequestFormProps> = ({
                   />
                   <Phone size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
                 </div>
+              </div>
+
+              <div className="space-y-1 sm:col-span-6">
+                <label className="text-xs font-semibold text-slate-600">E-mail (para acompanhar a remoção pelo site)</label>
+                <div className="relative">
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="seuemail@exemplo.com"
+                    className="w-full pl-8 pr-2.5 py-2 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 outline-none text-sm text-[#0a2619]"
+                  />
+                  <Mail size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                </div>
+                <p className="text-[11px] text-slate-500">
+                  Para consultar o andamento pelo site, enviamos um código de segurança para este e-mail.
+                </p>
               </div>
             </div>
 

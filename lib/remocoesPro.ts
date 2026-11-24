@@ -3,6 +3,9 @@ const FUNCTIONS_BASE_URL =
   'https://kijwizzgbrytvgseixme.supabase.co/functions/v1';
 
 export interface QuotationPayload {
+  /** 'evento' grava no módulo Eventos do sistema */
+  kind?: 'evento';
+  event?: { nome: string; local: string; tipo: string; publico: string; duracao: string; estrutura: string };
   origin: string;
   destination: string;
   date: string;
