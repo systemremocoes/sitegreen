@@ -123,19 +123,28 @@ const App: React.FC = () => {
       />
 
       <main className="flex-grow">
-        {currentPage === 'home' && <Home onNavigate={navigate} />}
+        {currentPage === 'home' && (
+          <Home onNavigate={navigate} onOpenRequestModal={() => setIsQuickModalOpen(true)} />
+        )}
         {currentPage === 'about' && <About />}
         {currentPage === 'schedule' && <Schedule />}
-        {currentPage === 'ambulances' && <Ambulances onNavigate={navigate} />}
+        {currentPage === 'ambulances' && (
+          <Ambulances onNavigate={navigate} onOpenRequestModal={() => setIsQuickModalOpen(true)} />
+        )}
         {currentPage === 'plans' && <Plans onNavigate={navigate} />}
         {currentPage === 'client-portal' && (
-          <ClientPortal onNavigate={navigate} onSelectRemovalLookup={handleSelectRemovalLookup} />
+          <ClientPortal
+            onNavigate={navigate}
+            onSelectRemovalLookup={handleSelectRemovalLookup}
+            onOpenRequestModal={() => setIsQuickModalOpen(true)}
+          />
         )}
         {currentPage === 'client-area' && (
           <ClientArea
             onNavigate={navigate}
             initialProtocol={selectedProtocol}
             initialVerifier={selectedVerifier}
+            onOpenRequestModal={() => setIsQuickModalOpen(true)}
           />
         )}
         {currentPage === 'accredited-area' && <AccreditedArea onNavigate={navigate} />}
@@ -143,7 +152,11 @@ const App: React.FC = () => {
         {currentPage === 'privacy' && <Privacy onNavigate={navigate} />}
         {currentPage === 'terms' && <Terms onNavigate={navigate} />}
         {currentPage === 'service-detail' && selectedServiceId && (
-          <ServiceDetail serviceId={selectedServiceId} onNavigate={navigate} />
+          <ServiceDetail
+            serviceId={selectedServiceId}
+            onNavigate={navigate}
+            onOpenRequestModal={() => setIsQuickModalOpen(true)}
+          />
         )}
       </main>
 

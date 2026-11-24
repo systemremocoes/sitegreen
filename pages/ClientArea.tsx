@@ -11,7 +11,6 @@ import {
   ClipboardCheck,
   AlertCircle,
   CalendarPlus,
-  Phone,
   Lock,
   ShieldCheck
 } from 'lucide-react';
@@ -28,12 +27,14 @@ interface ClientAreaProps {
   onNavigate: (page: Page) => void;
   initialProtocol?: string | null;
   initialVerifier?: string | null;
+  onOpenRequestModal?: () => void;
 }
 
 const ClientArea: React.FC<ClientAreaProps> = ({
   onNavigate,
   initialProtocol,
-  initialVerifier
+  initialVerifier,
+  onOpenRequestModal
 }) => {
   const [trackingCode, setTrackingCode] = useState(initialProtocol || '');
   const [verifier, setVerifier] = useState(initialVerifier || '');
@@ -103,19 +104,12 @@ const ClientArea: React.FC<ClientAreaProps> = ({
           </div>
           <div className="flex flex-wrap gap-3">
             <button
-              onClick={() => onNavigate('schedule')}
+              onClick={() => (onOpenRequestModal ? onOpenRequestModal() : onNavigate('schedule'))}
               className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 shadow-sm transition-all"
             >
               <CalendarPlus size={17} />
               <span>Solicitar Remoção</span>
             </button>
-            <a
-              href="tel:1937923947"
-              className="bg-white border border-slate-200 text-[#0a2619] hover:bg-slate-50 px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition-all"
-            >
-              <Phone size={15} className="text-emerald-600" />
-              <span>(19) 3792-3947</span>
-            </a>
           </div>
         </div>
 

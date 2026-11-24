@@ -6,8 +6,7 @@ import {
   Send,
   Users,
   Building2,
-  HeartPulse,
-  Phone
+  HeartPulse
 } from 'lucide-react';
 import { Page } from '../App';
 import { submitQuotationToRemocoesPro } from '../lib/remocoesPro';
@@ -209,18 +208,9 @@ const Plans: React.FC<PlansProps> = ({ onNavigate }) => {
             </div>
           ) : (
             <form onSubmit={handleSubscribe} className="space-y-6">
-              <div className="border-b border-emerald-100 pb-6 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                  <h2 className="text-2xl font-black text-[#0a2619]">Solicitar Assinatura: {selectedPlan}</h2>
-                  <p className="text-sm text-emerald-900/60">Preencha seus dados para receber o contrato e o primeiro boleto.</p>
-                </div>
-                <a
-                  href="tel:1937923947"
-                  className="inline-flex items-center gap-2 text-sm font-bold text-emerald-700 bg-emerald-50 px-4 py-2 rounded-xl"
-                >
-                  <Phone size={16} />
-                  <span>(19) 3792-3947</span>
-                </a>
+              <div className="border-b border-emerald-100 pb-6 mb-6">
+                <h2 className="text-2xl font-black text-[#0a2619]">Solicitar Assinatura: {selectedPlan}</h2>
+                <p className="text-sm text-emerald-900/60">Preencha seus dados para receber o contrato e o primeiro boleto.</p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

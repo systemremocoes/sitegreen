@@ -103,15 +103,8 @@ const Partners: React.FC = () => {
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 text-center">
         <div className="inline-flex flex-col md:flex-row items-center gap-4 px-8 py-5 bg-emerald-50/50 rounded-3xl border border-emerald-100">
-          <span className="text-emerald-950 font-bold">Dúvidas se atendemos seu plano?</span>
-          <div className="flex items-center gap-4">
-            <a 
-              href="tel:1937923947" 
-              className="px-6 py-2.5 bg-emerald-600 text-white rounded-xl font-black text-sm hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/20"
-            >
-              Ligar: (19) 3792-3947
-            </a>
-          </div>
+          <span className="text-emerald-950 font-bold">Dúvidas se atendemos seu plano ou convênio?</span>
+          <span className="text-sm text-emerald-800 font-medium">Consulte nossa central no atendimento ao solicitar sua remoção.</span>
         </div>
       </div>
     </section>

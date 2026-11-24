@@ -10,13 +10,13 @@ import {
   Building2,
   Home,
   FileSearch,
-  MapPin,
-  Phone
+  MapPin
 } from 'lucide-react';
 import { Page } from '../App';
 
 interface AmbulancesProps {
   onNavigate: (page: Page, serviceId?: string) => void;
+  onOpenRequestModal?: () => void;
 }
 
 const ambulanceTypes = [
@@ -94,7 +94,7 @@ const removalTypes = [
   }
 ];
 
-const Ambulances: React.FC<AmbulancesProps> = ({ onNavigate }) => {
+const Ambulances: React.FC<AmbulancesProps> = ({ onNavigate, onOpenRequestModal }) => {
   return (
     <div className="pt-28 pb-20 bg-slate-50 min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -170,7 +170,7 @@ const Ambulances: React.FC<AmbulancesProps> = ({ onNavigate }) => {
                     Ver Detalhes
                   </button>
                   <button
-                    onClick={() => onNavigate('schedule')}
+                    onClick={() => (onOpenRequestModal ? onOpenRequestModal() : onNavigate('schedule'))}
                     className="flex-1 px-4 py-2.5 rounded-xl bg-[#0a2619] hover:bg-emerald-900 text-white font-semibold text-sm flex items-center justify-center gap-1.5 transition-colors"
                   >
                     <span>Solicitar</span>
@@ -216,19 +216,12 @@ const Ambulances: React.FC<AmbulancesProps> = ({ onNavigate }) => {
             </p>
           </div>
           <div className="flex flex-wrap gap-3 shrink-0">
-            <a
-              href="tel:1937923947"
-              className="px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm flex items-center gap-2 transition-colors"
-            >
-              <Phone size={16} />
-              <span>(19) 3792-3947</span>
-            </a>
             <button
-              onClick={() => onNavigate('schedule')}
+              onClick={() => (onOpenRequestModal ? onOpenRequestModal() : onNavigate('schedule'))}
               className="px-6 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-[#0a2619] font-bold text-sm flex items-center gap-2 transition-colors"
             >
               <Truck size={16} />
-              <span>Agendar Remoção</span>
+              <span>Solicitar Remoção</span>
             </button>
           </div>
         </div>

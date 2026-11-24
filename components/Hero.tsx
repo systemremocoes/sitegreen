@@ -5,9 +5,10 @@ import { Page } from '../App';
 
 interface HeroProps {
   onNavigate?: (page: Page, serviceId?: string) => void;
+  onOpenRequestModal?: () => void;
 }
 
-const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
+const Hero: React.FC<HeroProps> = ({ onNavigate, onOpenRequestModal }) => {
   return (
     <div className="relative min-h-screen flex items-center overflow-hidden bg-[#0a2619]">
       {/* Elementos Decorativos de Ondas (Top Left - Estilo da Marca) */}
@@ -62,13 +63,13 @@ const Hero: React.FC<HeroProps> = ({ onNavigate }) => {
               <span>(19) 3792-3947</span>
             </a>
 
-            {onNavigate && (
+            {(onOpenRequestModal || onNavigate) && (
               <button
-                onClick={() => onNavigate('schedule')}
+                onClick={() => (onOpenRequestModal ? onOpenRequestModal() : onNavigate?.('schedule'))}
                 className="flex items-center justify-center space-x-2.5 bg-white hover:bg-emerald-50 text-[#0a2619] px-6 py-3.5 rounded-xl text-base font-bold transition-all shadow-md border border-emerald-100"
               >
                 <CalendarClock size={20} className="text-emerald-600 flex-shrink-0" />
-                <span>Agendar Online</span>
+                <span>Solicitar Remoção</span>
               </button>
             )}
           </div>

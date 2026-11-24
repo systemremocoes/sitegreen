@@ -14,7 +14,6 @@ import {
   CreditCard,
   AlertCircle,
   Lock,
-  Phone,
   RefreshCw,
   QrCode,
   FileText
@@ -447,13 +446,6 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">
-            <a
-              href="tel:1937923947"
-              className="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors"
-            >
-              <Phone size={14} />
-              <span>(19) 3792-3947</span>
-            </a>
             <button
               onClick={handleLogout}
               className="bg-red-500/20 hover:bg-red-500/30 text-red-200 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors"

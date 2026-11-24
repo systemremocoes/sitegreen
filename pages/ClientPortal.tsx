@@ -8,8 +8,6 @@ import {
   Receipt,
   Ambulance,
   AlertCircle,
-  Sparkles,
-  Phone,
   KeyRound
 } from 'lucide-react';
 import { Page } from '../App';
@@ -18,9 +16,10 @@ import { normalizeDigits } from '../lib/remocoesPro';
 interface ClientPortalProps {
   onNavigate: (page: Page) => void;
   onSelectRemovalLookup: (protocol: string, verifier: string) => void;
+  onOpenRequestModal?: () => void;
 }
 
-const ClientPortal: React.FC<ClientPortalProps> = ({ onNavigate, onSelectRemovalLookup }) => {
+const ClientPortal: React.FC<ClientPortalProps> = ({ onNavigate, onSelectRemovalLookup, onOpenRequestModal }) => {
   // Card 1: Remoções Avulsas (Protocolo + Telefone/CPF)
   const [protocolInput, setProtocolInput] = useState('');
   const [verifierInput, setVerifierInput] = useState('');
@@ -160,7 +159,7 @@ const ClientPortal: React.FC<ClientPortalProps> = ({ onNavigate, onSelectRemoval
               <span>Precisa agendar uma nova remoção?</span>
               <button
                 type="button"
-                onClick={() => onNavigate('schedule')}
+                onClick={() => (onOpenRequestModal ? onOpenRequestModal() : onNavigate('schedule'))}
                 className="font-bold text-emerald-700 hover:underline"
               >
                 Solicitar Agora
@@ -235,14 +234,9 @@ const ClientPortal: React.FC<ClientPortalProps> = ({ onNavigate, onSelectRemoval
           </div>
         </div>
 
-        {/* Rodapé de Apoio Telefônico */}
-        <div className="mt-10 text-center">
-          <p className="text-sm text-slate-500 inline-flex items-center gap-2">
-            <Phone size={15} className="text-emerald-600" />
-            <span>Dúvidas no acesso? Ligue para nossa Central 24h:</span>
-            <a href="tel:1937923947" className="font-bold text-[#0a2619] hover:text-emerald-700">
-              (19) 3792-3947
-            </a>
+        <div className="mt-8 text-center">
+          <p className="text-xs text-slate-400">
+            Atendimento 24h com proteção de dados (LGPD) • Remoções Pro
           </p>
         </div>
       </div>

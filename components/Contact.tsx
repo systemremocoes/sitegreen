@@ -2,44 +2,28 @@ import React, { useState } from 'react';
 import {
   Mail,
   MapPin,
-  Phone,
   Send,
   CheckCircle2,
-  MessageCircle,
   Ambulance,
-  Building2,
-  Zap,
   Copy,
   Check
 } from 'lucide-react';
 import { submitQuotationToRemocoesPro } from '../lib/remocoesPro';
 
-const Contact: React.FC = () => {
-  const [mode, setMode] = useState<'removal' | 'commercial'>('removal');
+interface ContactProps {
+  onOpenRequestModal?: () => void;
+}
 
-  // Campos comuns / comerciais
+const Contact: React.FC<ContactProps> = ({ onOpenRequestModal }) => {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [serviceType, setServiceType] = useState('');
   const [messageText, setMessageText] = useState('');
 
-  // Campos específicos de remoção
-  const [origin, setOrigin] = useState('');
-  const [destination, setDestination] = useState('');
-  const [date, setDate] = useState('');
-  const [time, setTime] = useState('');
-  const [ambulanceType, setAmbulanceType] = useState('simples');
-
   const [loading, setLoading] = useState(false);
   const [protocol, setProtocol] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-
-  const fillNow = () => {
-    const now = new Date();
-    setDate(now.toISOString().split('T')[0]);
-    setTime(now.toTimeString().slice(0, 5));
-  };
 
   const handleCopyProtocol = () => {
     if (!protocol) return;
@@ -57,43 +41,22 @@ const Contact: React.FC = () => {
       return;
     }
 
-    if (mode === 'removal' && (!origin.trim() || !destination.trim())) {
-      setErrorMsg('Por favor, informe os endereços de origem e destino da remoção.');
-      return;
-    }
-
     setLoading(true);
 
-    const payload =
-      mode === 'removal'
-        ? {
-            origin: origin.trim(),
-            destination: destination.trim(),
-            date: date || new Date().toISOString().split('T')[0],
-            time: time || new Date().toTimeString().slice(0, 5),
-            patientName: name.trim(),
-            patientAge: '',
-            contactPhone: phone.trim(),
-            email: '',
-            observations: messageText.trim(),
-            serviceType: ambulanceType,
-            source: 'home_removal_form'
-          }
-        : {
-            origin: 'Contato Comercial (Site)',
-            destination: serviceType || 'Orçamento Comercial',
-            date: new Date().toISOString().split('T')[0],
-            time: new Date().toTimeString().slice(0, 5),
-            patientName: name.trim(),
-            patientAge: '',
-            contactPhone: phone.trim(),
-            email: '',
-            observations: `[Orçamento Comercial - ${serviceType || 'Geral'}] ${messageText.trim()}`,
-            serviceType: serviceType || 'Orçamento Comercial',
-            source: 'contact_form'
-          };
+    const result = await submitQuotationToRemocoesPro({
+      origin: 'Contato Comercial (Site)',
+      destination: serviceType || 'Orçamento Comercial',
+      date: new Date().toISOString().split('T')[0],
+      time: new Date().toTimeString().slice(0, 5),
+      patientName: name.trim(),
+      patientAge: '',
+      contactPhone: phone.trim(),
+      email: '',
+      observations: `[Orçamento Comercial - ${serviceType || 'Geral'}] ${messageText.trim()}`,
+      serviceType: serviceType || 'Orçamento Comercial',
+      source: 'contact_form'
+    });
 
-    const result = await submitQuotationToRemocoesPro(payload);
     setLoading(false);
 
     if (result.success) {
@@ -102,17 +65,8 @@ const Contact: React.FC = () => {
       setPhone('');
       setServiceType('');
       setMessageText('');
-      setOrigin('');
-      setDestination('');
-      setDate('');
-      setTime('');
     } else {
-      setErrorMsg('Não foi possível registrar automaticamente. Redirecionando para o WhatsApp da central.');
-      const waText =
-        mode === 'removal'
-          ? `*Solicitação de Remoção (Site)*\n\n*Paciente/Solicitante:* ${name}\n*Telefone:* ${phone}\n*Origem:* ${origin}\n*Destino:* ${destination}\n*Data/Hora:* ${date} ${time}\n*Unidade:* ${ambulanceType}\n*Obs:* ${messageText}`
-          : `*Orçamento Comercial (Site)*\n\n*Nome:* ${name}\n*Telefone:* ${phone}\n*Serviço:* ${serviceType}\n*Mensagem:* ${messageText}`;
-      window.open(`https://wa.me/5519998049901?text=${encodeURIComponent(waText)}`, '_blank');
+      setErrorMsg('Não foi possível registrar automaticamente. Tente novamente em instantes.');
     }
   };
 
@@ -128,30 +82,18 @@ const Contact: React.FC = () => {
                 Central 24h • Limeira e Região
               </span>
 
-              <h3 className="text-2xl font-bold mb-3 tracking-tight">Atendimento Imediato</h3>
+              <h3 className="text-2xl font-bold mb-3 tracking-tight">Atendimento Comercial & Corporativo</h3>
               <p className="text-emerald-100/75 mb-8 text-sm leading-relaxed">
-                Solicite uma remoção com ambulância ou peça um orçamento comercial para sua empresa, condomínio ou evento. Tudo integrado ao Remoções Pro.
+                Solicite propostas para Área Protegida, cobertura médica de eventos ou planos mensais diretamente para nossa central no Remoções Pro.
               </p>
 
               <div className="space-y-5">
                 <div className="flex items-start space-x-3.5">
                   <div className="bg-emerald-800/50 p-2.5 rounded-xl text-emerald-400 shrink-0">
-                    <Phone size={18} />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-emerald-400 uppercase text-[11px] tracking-wider mb-0.5">Central Telefônica 24h</h4>
-                    <a href="tel:1937923947" className="text-white text-lg font-bold hover:text-emerald-300 transition-colors">
-                      (19) 3792-3947
-                    </a>
-                  </div>
-                </div>
-
-                <div className="flex items-start space-x-3.5">
-                  <div className="bg-emerald-800/50 p-2.5 rounded-xl text-emerald-400 shrink-0">
                     <Mail size={18} />
                   </div>
                   <div>
-                    <h4 className="font-bold text-emerald-400 uppercase text-[11px] tracking-wider mb-0.5">E-mail</h4>
+                    <h4 className="font-bold text-emerald-400 uppercase text-[11px] tracking-wider mb-0.5">E-mail Comercial</h4>
                     <p className="text-white text-sm font-medium break-all">atendimento@greenemergencias.com.br</p>
                   </div>
                 </div>
@@ -170,60 +112,28 @@ const Contact: React.FC = () => {
               </div>
             </div>
 
-            <div className="mt-8 pt-6 border-t border-white/10 text-xs text-emerald-100/60">
-              Frota própria homologada (UTI Móvel Tipo D, SIV e Suporte Básico Tipo B).
-            </div>
+            {onOpenRequestModal && (
+              <div className="mt-8 pt-6 border-t border-white/10">
+                <p className="text-xs text-emerald-100/75 mb-3">Precisa de uma ambulância ou remoção agora?</p>
+                <button
+                  type="button"
+                  onClick={onOpenRequestModal}
+                  className="w-full bg-emerald-500 hover:bg-emerald-400 text-[#0a2619] py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-colors"
+                >
+                  <Ambulance size={16} />
+                  <span>Abrir Formulário de Remoção</span>
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Form Side */}
           <div className="lg:w-7/12 p-8 md:p-10 relative">
-            {/* Switcher de Modo */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-5 border-b border-slate-100">
-              <div>
-                <h3 className="text-xl font-bold text-[#0a2619]">
-                  {mode === 'removal' ? 'Solicitar Remoção' : 'Solicitar Orçamento Comercial'}
-                </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  {mode === 'removal'
-                    ? 'Preencha os dados do trajeto para envio imediato à central.'
-                    : 'Para planos mensais, área protegida e cobertura de eventos.'}
-                </p>
-              </div>
-
-              <div className="inline-flex bg-slate-100 p-1 rounded-xl shrink-0">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMode('removal');
-                    setProtocol(null);
-                    setErrorMsg(null);
-                  }}
-                  className={`px-3.5 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${
-                    mode === 'removal'
-                      ? 'bg-[#0a2619] text-white shadow-sm'
-                      : 'text-slate-600 hover:text-[#0a2619]'
-                  }`}
-                >
-                  <Ambulance size={14} />
-                  <span>Remoção</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMode('commercial');
-                    setProtocol(null);
-                    setErrorMsg(null);
-                  }}
-                  className={`px-3.5 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${
-                    mode === 'commercial'
-                      ? 'bg-[#0a2619] text-white shadow-sm'
-                      : 'text-slate-600 hover:text-[#0a2619]'
-                  }`}
-                >
-                  <Building2 size={14} />
-                  <span>Comercial</span>
-                </button>
-              </div>
+            <div className="mb-6 pb-4 border-b border-slate-100">
+              <h3 className="text-xl font-bold text-[#0a2619]">Solicitar Orçamento Comercial</h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Para empresas, condomínios, planos mensais e cobertura de eventos.
+              </p>
             </div>
 
             {protocol ? (
@@ -233,7 +143,7 @@ const Contact: React.FC = () => {
                 </div>
                 <h4 className="text-xl font-bold text-[#0a2619] mb-1.5">Solicitação Registrada!</h4>
                 <p className="text-slate-600 text-sm mb-5 max-w-md mx-auto">
-                  Seu pedido já foi enviado para a nossa central no sistema <strong>Remoções Pro</strong>. Nossa equipe dará prosseguimento ao atendimento em instantes.
+                  Seu pedido comercial foi enviado para nossa central no sistema <strong>Remoções Pro</strong>. Nossa equipe dará prosseguimento em instantes.
                 </p>
 
                 <div className="bg-white border border-dashed border-emerald-300 rounded-xl p-4 mb-6 inline-flex items-center gap-3 px-6">
@@ -253,22 +163,11 @@ const Contact: React.FC = () => {
                   </button>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                  <a
-                    href={`https://wa.me/5519998049901?text=${encodeURIComponent(
-                      `Olá! Acabei de enviar uma solicitação pelo site. Protocolo: ${protocol}`
-                    )}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="bg-emerald-600 text-white px-5 py-2.5 rounded-xl font-bold text-xs hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2"
-                  >
-                    <MessageCircle size={16} />
-                    <span>Acompanhar no WhatsApp</span>
-                  </a>
+                <div>
                   <button
                     type="button"
                     onClick={() => setProtocol(null)}
-                    className="bg-white text-[#0a2619] border border-slate-200 px-5 py-2.5 rounded-xl font-bold text-xs hover:bg-slate-50 transition-colors"
+                    className="bg-[#0a2619] text-white px-6 py-2.5 rounded-xl font-bold text-xs hover:bg-emerald-900 transition-colors"
                   >
                     Nova Solicitação
                   </button>
@@ -284,20 +183,18 @@ const Contact: React.FC = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <label className="text-xs font-semibold text-slate-600">
-                      {mode === 'removal' ? 'Nome do Paciente / Solicitante *' : 'Seu Nome ou Empresa *'}
-                    </label>
+                    <label className="text-xs font-semibold text-slate-600">Seu Nome ou Empresa *</label>
                     <input
                       type="text"
                       required
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      placeholder="Ex: João Silva"
+                      placeholder="Ex: João Silva / Empresa LTDA"
                       className="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 border border-slate-200 focus:bg-white focus:border-emerald-500 outline-none text-sm text-[#0a2619]"
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-semibold text-slate-600">Telefone / WhatsApp *</label>
+                    <label className="text-xs font-semibold text-slate-600">Telefone para Contato *</label>
                     <input
                       type="tel"
                       required
@@ -309,107 +206,28 @@ const Contact: React.FC = () => {
                   </div>
                 </div>
 
-                {mode === 'removal' ? (
-                  <>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-1">
-                        <label className="text-xs font-semibold text-slate-600">Endereço / Hospital de Origem *</label>
-                        <input
-                          type="text"
-                          required
-                          value={origin}
-                          onChange={(e) => setOrigin(e.target.value)}
-                          placeholder="Local de retirada"
-                          className="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 border border-slate-200 focus:bg-white focus:border-emerald-500 outline-none text-sm text-[#0a2619]"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-xs font-semibold text-slate-600">Endereço / Hospital de Destino *</label>
-                        <input
-                          type="text"
-                          required
-                          value={destination}
-                          onChange={(e) => setDestination(e.target.value)}
-                          placeholder="Local de destino"
-                          className="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 border border-slate-200 focus:bg-white focus:border-emerald-500 outline-none text-sm text-[#0a2619]"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-                      <div className="space-y-1">
-                        <div className="flex items-center justify-between">
-                          <label className="text-xs font-semibold text-slate-600">Data</label>
-                          <button
-                            type="button"
-                            onClick={fillNow}
-                            className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 hover:text-emerald-900"
-                          >
-                            <Zap size={11} />
-                            <span>Agora</span>
-                          </button>
-                        </div>
-                        <input
-                          type="date"
-                          value={date}
-                          onChange={(e) => setDate(e.target.value)}
-                          className="w-full px-3 py-2.5 rounded-lg bg-slate-50 border border-slate-200 focus:bg-white focus:border-emerald-500 outline-none text-sm text-[#0a2619]"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-xs font-semibold text-slate-600">Horário</label>
-                        <input
-                          type="time"
-                          value={time}
-                          onChange={(e) => setTime(e.target.value)}
-                          className="w-full px-3 py-2.5 rounded-lg bg-slate-50 border border-slate-200 focus:bg-white focus:border-emerald-500 outline-none text-sm text-[#0a2619]"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-xs font-semibold text-slate-600">Tipo de Ambulância</label>
-                        <select
-                          value={ambulanceType}
-                          onChange={(e) => setAmbulanceType(e.target.value)}
-                          className="w-full px-3 py-2.5 rounded-lg bg-slate-50 border border-slate-200 focus:bg-white focus:border-emerald-500 outline-none text-sm text-[#0a2619]"
-                        >
-                          <option value="simples">Suporte Básico (Tipo B)</option>
-                          <option value="siv">Intermediário (SIV)</option>
-                          <option value="uti">UTI Móvel (Tipo D)</option>
-                        </select>
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <div className="space-y-1">
-                    <label className="text-xs font-semibold text-slate-600">Tipo de Serviço</label>
-                    <select
-                      value={serviceType}
-                      onChange={(e) => setServiceType(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 border border-slate-200 focus:bg-white focus:border-emerald-500 outline-none text-sm text-[#0a2619]"
-                    >
-                      <option value="">Selecione uma opção</option>
-                      <option value="Área Protegida para Empresa">Área Protegida para Empresa</option>
-                      <option value="Plano de Remoção Mensal">Plano de Remoção Mensal (Assinatura)</option>
-                      <option value="Cobertura de Eventos">Cobertura de Eventos</option>
-                      <option value="Remoção Programada">Remoção Programada</option>
-                      <option value="Outros">Outros</option>
-                    </select>
-                  </div>
-                )}
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-slate-600">Tipo de Serviço</label>
+                  <select
+                    value={serviceType}
+                    onChange={(e) => setServiceType(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 border border-slate-200 focus:bg-white focus:border-emerald-500 outline-none text-sm text-[#0a2619]"
+                  >
+                    <option value="">Selecione uma opção</option>
+                    <option value="Área Protegida para Empresa">Área Protegida para Empresa</option>
+                    <option value="Plano de Remoção Mensal">Plano de Remoção Mensal (Assinatura)</option>
+                    <option value="Cobertura de Eventos">Cobertura de Eventos</option>
+                    <option value="Outros">Outros</option>
+                  </select>
+                </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-600">
-                    {mode === 'removal' ? 'Observações Clínicas (Opcional)' : 'Detalhes da Solicitação'}
-                  </label>
+                  <label className="text-xs font-semibold text-slate-600">Detalhes da Solicitação</label>
                   <textarea
-                    rows={2}
+                    rows={3}
                     value={messageText}
                     onChange={(e) => setMessageText(e.target.value)}
-                    placeholder={
-                      mode === 'removal'
-                        ? 'Paciente acamado, uso de oxigênio, andar sem elevador...'
-                        : 'Conte-nos como podemos ajudar sua empresa ou evento...'
-                    }
+                    placeholder="Conte-nos como podemos ajudar sua empresa ou evento..."
                     className="w-full px-3.5 py-2.5 rounded-lg bg-slate-50 border border-slate-200 focus:bg-white focus:border-emerald-500 outline-none text-sm text-[#0a2619] resize-none"
                   />
                 </div>
@@ -419,13 +237,7 @@ const Contact: React.FC = () => {
                   disabled={loading}
                   className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl flex items-center justify-center space-x-2 transition-all shadow-md shadow-emerald-600/20 text-sm disabled:opacity-50"
                 >
-                  <span>
-                    {loading
-                      ? 'Enviando para Remoções Pro...'
-                      : mode === 'removal'
-                      ? 'Solicitar Remoção Agora'
-                      : 'Enviar Orçamento Comercial'}
-                  </span>
+                  <span>{loading ? 'Enviando para Remoções Pro...' : 'Enviar Orçamento Comercial'}</span>
                   <Send size={16} />
                 </button>
               </form>

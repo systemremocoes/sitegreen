@@ -127,31 +127,18 @@ const Navbar: React.FC<NavbarProps> = ({ scrolled, navigate, onOpenQuickModal })
                 }`}
               >
                 <button
-                  onClick={() => handleLinkClick('schedule')}
+                  onClick={() => {
+                    setOpenDropdown(null);
+                    onOpenQuickModal?.();
+                  }}
                   className="w-full text-left px-5 py-3 hover:bg-emerald-50 transition-colors flex items-start gap-3"
                 >
                   <CalendarPlus size={18} className="text-emerald-600 shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-sm font-bold text-[#0a2619]">Agendar Remoção</p>
-                    <p className="text-xs text-slate-500">Formulário completo</p>
+                    <p className="text-sm font-bold text-[#0a2619]">Solicitar Remoção</p>
+                    <p className="text-xs text-slate-500">Agendamento e orçamento</p>
                   </div>
                 </button>
-
-                {onOpenQuickModal && (
-                  <button
-                    onClick={() => {
-                      setOpenDropdown(null);
-                      onOpenQuickModal();
-                    }}
-                    className="w-full text-left px-5 py-3 hover:bg-emerald-50 transition-colors flex items-start gap-3"
-                  >
-                    <Activity size={18} className="text-emerald-600 shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-sm font-bold text-[#0a2619]">Orçamento Rápido</p>
-                      <p className="text-xs text-slate-500">Solicitação expressa</p>
-                    </div>
-                  </button>
-                )}
 
                 <button
                   onClick={() => handleLinkClick('plans')}
@@ -226,20 +213,15 @@ const Navbar: React.FC<NavbarProps> = ({ scrolled, navigate, onOpenQuickModal })
 
             <div className="pl-3 py-2 space-y-2 border-t border-slate-100">
               <p className="text-xs font-bold text-emerald-700 uppercase tracking-wider">Solicitar Remoção</p>
-              <button onClick={() => handleLinkClick('schedule')} className="block w-full text-left text-[#0a2619] font-semibold text-sm py-1">
-                Agendar Remoção
+              <button
+                onClick={() => {
+                  setIsOpen(false);
+                  onOpenQuickModal?.();
+                }}
+                className="block w-full text-left text-[#0a2619] font-semibold text-sm py-1"
+              >
+                Solicitar Remoção
               </button>
-              {onOpenQuickModal && (
-                <button
-                  onClick={() => {
-                    setIsOpen(false);
-                    onOpenQuickModal();
-                  }}
-                  className="block w-full text-left text-[#0a2619] font-semibold text-sm py-1"
-                >
-                  Orçamento Rápido
-                </button>
-              )}
               <button onClick={() => handleLinkClick('plans')} className="block w-full text-left text-[#0a2619] font-semibold text-sm py-1">
                 Assinar Plano Mensal
               </button>

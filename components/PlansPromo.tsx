@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldCheck, CheckCircle2, ArrowRight, Sparkles, Phone } from 'lucide-react';
+import { ShieldCheck, CheckCircle2, ArrowRight, Sparkles } from 'lucide-react';
 import { Page } from '../App';
 
 interface PlansPromoProps {
@@ -52,13 +52,6 @@ const PlansPromo: React.FC<PlansPromoProps> = ({ onNavigate }) => {
                   <span>Assinar Plano de Remoção</span>
                   <ArrowRight size={17} />
                 </button>
-                <a
-                  href="tel:1937923947"
-                  className="bg-white/10 hover:bg-white/15 border border-white/20 text-white px-6 py-3 rounded-xl font-semibold text-sm flex items-center justify-center space-x-2 transition-all"
-                >
-                  <Phone size={16} />
-                  <span>(19) 3792-3947</span>
-                </a>
               </div>
             </div>
 

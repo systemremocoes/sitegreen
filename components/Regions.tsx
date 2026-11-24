@@ -2,7 +2,11 @@
 import React from 'react';
 import { MapPin } from 'lucide-react';
 
-const Regions: React.FC = () => {
+interface RegionsProps {
+  onOpenRequestModal?: () => void;
+}
+
+const Regions: React.FC<RegionsProps> = ({ onOpenRequestModal }) => {
   const regions = [
     "Limeira (Sede)", "Cordeirópolis", "Iracemápolis", "Americana", "Santa Bárbara d'Oeste", 
     "Piracicaba", "Araras", "Rio Claro", "Sumaré", "Campinas e Região", "Grande São Paulo", "Litoral Paulista"
@@ -45,12 +49,15 @@ const Regions: React.FC = () => {
             <p className="text-emerald-100/70 text-sm max-w-xl">Consulte nossa central para remoções de longa distância, transferências intermunicipais e suporte para eventos em todo o estado.</p>
           </div>
           
-          <a 
-            href="tel:1937923947" 
-            className="bg-emerald-500 text-[#0a2619] px-7 py-3.5 rounded-xl font-bold text-sm hover:bg-emerald-400 transition-all whitespace-nowrap shadow-lg relative z-10"
-          >
-            Ligar: (19) 3792-3947
-          </a>
+          {onOpenRequestModal ? (
+            <button
+              type="button"
+              onClick={onOpenRequestModal}
+              className="bg-emerald-500 text-[#0a2619] px-7 py-3.5 rounded-xl font-bold text-sm hover:bg-emerald-400 transition-all whitespace-nowrap shadow-lg relative z-10"
+            >
+              Solicitar Remoção Agora
+            </button>
+          ) : null}
         </div>
       </div>
     </div>

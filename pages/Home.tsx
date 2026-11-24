@@ -12,14 +12,15 @@ import { Page } from '../App';
 
 interface HomeProps {
   onNavigate: (page: Page, serviceId?: string) => void;
+  onOpenRequestModal: () => void;
 }
 
-const Home: React.FC<HomeProps> = ({ onNavigate }) => {
+const Home: React.FC<HomeProps> = ({ onNavigate, onOpenRequestModal }) => {
   return (
     <>
-      <Hero onNavigate={onNavigate} />
+      <Hero onNavigate={onNavigate} onOpenRequestModal={onOpenRequestModal} />
       <section id="contato" className="bg-emerald-50/70">
-        <Contact />
+        <Contact onOpenRequestModal={onOpenRequestModal} />
       </section>
       <section id="servicos">
         <Services onNavigate={onNavigate} />
@@ -34,12 +35,12 @@ const Home: React.FC<HomeProps> = ({ onNavigate }) => {
         <Partners />
       </section>
       <section id="regioes" className="bg-emerald-50">
-        <Regions />
+        <Regions onOpenRequestModal={onOpenRequestModal} />
       </section>
       <section id="depoimentos">
         <Testimonials />
       </section>
-      <HomePopup onNavigate={onNavigate} />
+      <HomePopup onOpenRequestModal={onOpenRequestModal} />
     </>
   );
 };
