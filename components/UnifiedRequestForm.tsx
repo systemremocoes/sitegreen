@@ -16,7 +16,7 @@ import {
   Mail,
   Sparkles
 } from 'lucide-react';
-import { submitQuotationToRemocoesPro } from '../lib/remocoesPro';
+import { submitQuotationToRemocoesPro, formatProtocol } from '../lib/remocoesPro';
 
 export type RequestFormMode = 'removal' | 'event';
 
@@ -78,9 +78,34 @@ const UnifiedRequestForm: React.FC<UnifiedRequestFormProps> = ({
   const [eventLocation, setEventLocation] = useState('');
   const [eventType, setEventType] = useState('Esportivo');
   const [audience, setAudience] = useState('Até 500 pessoas');
-  const [duration, setDuration] = useState('Até 6 horas');
   const [eventStructure, setEventStructure] = useState('Ambulância Básica (Tipo B)');
   const [email, setEmail] = useState('');
+  // Evento: dados usados pelo sistema para emitir o contrato
+  const [dateEnd, setDateEnd] = useState('');
+  const [timeEnd, setTimeEnd] = useState('');
+  const [ambulanceCount, setAmbulanceCount] = useState('1');
+  const [ct, setCt] = useState({
+    empresa: '', cnpj_cpf: '', cep: '', endereco: '', numero: '', bairro: '', cidade: '', uf: '',
+    representante_cpf: '', representante_rg: ''
+  });
+  const [cepLoading, setCepLoading] = useState(false);
+  const setCtField = (k: keyof typeof ct, v: string) => setCt((c) => ({ ...c, [k]: v }));
+  const lookupCep = async (raw: string) => {
+    const d = raw.replace(/\D/g, '');
+    if (d.length !== 8) return;
+    setCepLoading(true);
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${d}/json/`);
+      const j = await res.json();
+      if (!j?.erro) {
+        setCt((c) => ({ ...c, endereco: j.logradouro || c.endereco, bairro: j.bairro || c.bairro, cidade: j.localidade || c.cidade, uf: j.uf || c.uf }));
+      }
+    } catch {
+      // preenchimento manual continua disponível
+    } finally {
+      setCepLoading(false);
+    }
+  };
 
   useEffect(() => {
     setMode(initialMode);
@@ -122,11 +147,15 @@ const UnifiedRequestForm: React.FC<UnifiedRequestFormProps> = ({
     setEventName('');
     setEventLocation('');
     setEmail('');
+    setDateEnd('');
+    setTimeEnd('');
+    setAmbulanceCount('1');
+    setCt({ empresa: '', cnpj_cpf: '', cep: '', endereco: '', numero: '', bairro: '', cidade: '', uf: '', representante_cpf: '', representante_rg: '' });
   };
 
   const handleCopyProtocol = () => {
     if (!protocol) return;
-    navigator.clipboard.writeText(protocol);
+    navigator.clipboard.writeText(formatProtocol(protocol));
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -140,8 +169,19 @@ const UnifiedRequestForm: React.FC<UnifiedRequestFormProps> = ({
         return;
       }
     } else {
-      if (!eventName.trim() || !eventLocation.trim() || !patientName.trim() || !contactPhone.trim() || !date) {
-        alert('Preencha nome do evento, local, data, responsável e telefone.');
+      const doc = ct.cnpj_cpf.replace(/\D/g, '');
+      const faltando: string[] = [];
+      if (!ct.empresa.trim()) faltando.push('empresa/contratante');
+      if (doc.length !== 11 && doc.length !== 14) faltando.push('CNPJ/CPF');
+      if (!contactPhone.trim()) faltando.push('telefone');
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim())) faltando.push('e-mail');
+      if (ct.cep.replace(/\D/g, '').length !== 8 || !ct.endereco.trim() || !ct.numero.trim() || !ct.bairro.trim() || !ct.cidade.trim() || ct.uf.trim().length !== 2) faltando.push('endereço completo');
+      if (!patientName.trim()) faltando.push('nome do representante');
+      if (ct.representante_cpf.replace(/\D/g, '').length !== 11) faltando.push('CPF do representante');
+      if (!eventName.trim() || !eventLocation.trim()) faltando.push('nome e local do evento');
+      if (!date || !time || !timeEnd) faltando.push('data e horários de início e término');
+      if (faltando.length) {
+        alert(`Para emitir o contrato, preencha: ${faltando.join(', ')}.`);
         return;
       }
     }
@@ -167,22 +207,12 @@ const UnifiedRequestForm: React.FC<UnifiedRequestFormProps> = ({
               origin: `Evento: ${eventName.trim()} - ${eventLocation.trim()}`,
               destination: `Cobertura de Evento (${eventType})`,
               date,
-              time: time || '08:00',
+              time,
               patientName: patientName.trim(),
               patientAge: '',
               contactPhone: contactPhone.trim(),
               email: email.trim(),
-              observations: [
-                `[COTAÇÃO DE EVENTO]`,
-                `Evento: ${eventName.trim()}`,
-                `Tipo: ${eventType}`,
-                `Público: ${audience}`,
-                `Duração: ${duration}`,
-                `Estrutura: ${eventStructure}`,
-                observations.trim() ? `Obs: ${observations.trim()}` : ''
-              ]
-                .filter(Boolean)
-                .join(' | '),
+              observations: observations.trim(),
               serviceType: 'eventos',
               source: `${sourcePrefix}_event`,
               kind: 'evento' as const,
@@ -191,8 +221,23 @@ const UnifiedRequestForm: React.FC<UnifiedRequestFormProps> = ({
                 local: eventLocation.trim(),
                 tipo: eventType,
                 publico: audience,
-                duracao: duration,
-                estrutura: eventStructure
+                estrutura: eventStructure,
+                data_fim: dateEnd,
+                hora_fim: timeEnd,
+                quantidade_viaturas: Number(ambulanceCount) || 1
+              },
+              contratante: {
+                empresa: ct.empresa.trim(),
+                cnpj_cpf: ct.cnpj_cpf.replace(/\D/g, ''),
+                cep: ct.cep.replace(/\D/g, ''),
+                endereco: ct.endereco.trim(),
+                numero: ct.numero.trim(),
+                bairro: ct.bairro.trim(),
+                cidade: ct.cidade.trim(),
+                uf: ct.uf.trim().toUpperCase(),
+                representante_nome: patientName.trim(),
+                representante_cpf: ct.representante_cpf.replace(/\D/g, ''),
+                representante_rg: ct.representante_rg.trim()
               }
             };
 
@@ -230,8 +275,8 @@ const UnifiedRequestForm: React.FC<UnifiedRequestFormProps> = ({
             Protocolo de Atendimento
           </span>
           <div className="flex items-center justify-center gap-2">
-            <span className="text-xs sm:text-sm font-extrabold text-[#0a2619] font-mono break-all">
-              {protocol}
+            <span className="text-lg font-extrabold text-[#0a2619] font-mono">
+              {formatProtocol(protocol)}
             </span>
             <button
               type="button"
@@ -466,7 +511,7 @@ const UnifiedRequestForm: React.FC<UnifiedRequestFormProps> = ({
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-600">Local / Cidade *</label>
+                <label className="text-xs font-semibold text-slate-600">Local do Evento (endereço completo) *</label>
                 <div className="relative">
                   <input
                     type="text"
@@ -517,81 +562,92 @@ const UnifiedRequestForm: React.FC<UnifiedRequestFormProps> = ({
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-600">Duração</label>
-                <select
-                  value={duration}
-                  onChange={(e) => setDuration(e.target.value)}
-                  className="w-full px-2.5 py-2 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 outline-none text-sm text-[#0a2619]"
-                >
-                  <option value="Até 6 horas">Até 6 horas</option>
-                  <option value="6 a 12 horas">6 a 12 horas</option>
-                  <option value="Diária 24h">Diária 24h</option>
-                  <option value="Múltiplos dias">Múltiplos dias</option>
+                <label className="text-xs font-semibold text-slate-600">Qtd. de Viaturas *</label>
+                <select value={ambulanceCount} onChange={(e) => setAmbulanceCount(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 outline-none text-sm text-[#0a2619]">
+                  {['1', '2', '3', '4', '5'].map((n) => <option key={n} value={n}>{n}</option>)}
                 </select>
               </div>
             </div>
 
-            {/* Data, Horário, Responsável, Telefone, Email */}
+            {/* Datas e horários */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-600">Data *</label>
-                <input
-                  type="date"
-                  required
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  className="w-full px-2.5 py-2 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 outline-none text-sm text-[#0a2619]"
-                />
+                <label className="text-xs font-semibold text-slate-600">Data de Início *</label>
+                <input type="date" required value={date} onChange={(e) => setDate(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 outline-none text-sm text-[#0a2619]" />
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-600">Início</label>
-                <input
-                  type="time"
-                  value={time}
-                  onChange={(e) => setTime(e.target.value)}
-                  className="w-full px-2.5 py-2 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 outline-none text-sm text-[#0a2619]"
-                />
+                <label className="text-xs font-semibold text-slate-600">Data de Término</label>
+                <input type="date" value={dateEnd} min={date || undefined} onChange={(e) => setDateEnd(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 outline-none text-sm text-[#0a2619]" />
               </div>
-              <div className="space-y-1 col-span-2">
-                <label className="text-xs font-semibold text-slate-600">Responsável / Empresa *</label>
-                <input
-                  type="text"
-                  required
-                  value={patientName}
-                  onChange={(e) => setPatientName(e.target.value)}
-                  placeholder="Nome ou razão social"
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 outline-none text-sm text-[#0a2619]"
-                />
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-600">Horário de Início *</label>
+                <input type="time" required value={time} onChange={(e) => setTime(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 outline-none text-sm text-[#0a2619]" />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-600">Horário de Término *</label>
+                <input type="time" required value={timeEnd} onChange={(e) => setTimeEnd(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 outline-none text-sm text-[#0a2619]" />
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-600">Telefone *</label>
-                <div className="relative">
-                  <input
-                    type="tel"
-                    required
-                    value={contactPhone}
-                    onChange={(e) => setContactPhone(e.target.value)}
-                    placeholder="(19) 99999-9999"
-                    className="w-full pl-8 pr-2.5 py-2 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 outline-none text-sm text-[#0a2619]"
-                  />
-                  <Phone size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                </div>
+            {/* Contratante (dados do contrato) */}
+            <p className="text-xs font-bold uppercase tracking-wider text-emerald-700 pt-1">Dados do Contratante (para o contrato)</p>
+            <div className="grid grid-cols-1 sm:grid-cols-6 gap-3">
+              <div className="space-y-1 sm:col-span-4">
+                <label className="text-xs font-semibold text-slate-600">Empresa / Contratante *</label>
+                <input type="text" value={ct.empresa} onChange={(e) => setCtField('empresa', e.target.value)} className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 outline-none text-sm text-[#0a2619]" placeholder="Razão social ou nome completo" required />
               </div>
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-600">E-mail (Opcional)</label>
-                <div className="relative">
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="contato@evento.com"
-                    className="w-full pl-8 pr-2.5 py-2 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 outline-none text-sm text-[#0a2619]"
-                  />
-                  <Mail size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                </div>
+              <div className="space-y-1 sm:col-span-2">
+                <label className="text-xs font-semibold text-slate-600">CNPJ / CPF *</label>
+                <input type="text" value={ct.cnpj_cpf} onChange={(e) => setCtField('cnpj_cpf', e.target.value)} className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 outline-none text-sm text-[#0a2619]" inputMode="numeric" required />
+              </div>
+              <div className="space-y-1 sm:col-span-3">
+                <label className="text-xs font-semibold text-slate-600">Telefone / WhatsApp *</label>
+                <input type="tel" required value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} placeholder="(19) 99999-9999" className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 outline-none text-sm text-[#0a2619]" />
+              </div>
+              <div className="space-y-1 sm:col-span-3">
+                <label className="text-xs font-semibold text-slate-600">E-mail (proposta, contrato e NF) *</label>
+                <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="contato@empresa.com" className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 outline-none text-sm text-[#0a2619]" />
+              </div>
+              <div className="space-y-1 sm:col-span-2">
+                <label className="text-xs font-semibold text-slate-600">CEP * {cepLoading && <span className="text-emerald-600">buscando…</span>}</label>
+                <input type="text" required inputMode="numeric" value={ct.cep} onChange={(e) => { setCtField('cep', e.target.value); if (e.target.value.replace(/\D/g, '').length === 8) lookupCep(e.target.value); }} placeholder="00000-000" className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 outline-none text-sm text-[#0a2619]" />
+              </div>
+              <div className="space-y-1 sm:col-span-3">
+                <label className="text-xs font-semibold text-slate-600">Endereço *</label>
+                <input type="text" value={ct.endereco} onChange={(e) => setCtField('endereco', e.target.value)} className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 outline-none text-sm text-[#0a2619]" required />
+              </div>
+              <div className="space-y-1 sm:col-span-1">
+                <label className="text-xs font-semibold text-slate-600">Número *</label>
+                <input type="text" value={ct.numero} onChange={(e) => setCtField('numero', e.target.value)} className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 outline-none text-sm text-[#0a2619]" required />
+              </div>
+              <div className="space-y-1 sm:col-span-2">
+                <label className="text-xs font-semibold text-slate-600">Bairro *</label>
+                <input type="text" value={ct.bairro} onChange={(e) => setCtField('bairro', e.target.value)} className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 outline-none text-sm text-[#0a2619]" required />
+              </div>
+              <div className="space-y-1 sm:col-span-3">
+                <label className="text-xs font-semibold text-slate-600">Cidade *</label>
+                <input type="text" value={ct.cidade} onChange={(e) => setCtField('cidade', e.target.value)} className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 outline-none text-sm text-[#0a2619]" required />
+              </div>
+              <div className="space-y-1 sm:col-span-1">
+                <label className="text-xs font-semibold text-slate-600">UF *</label>
+                <input type="text" required maxLength={2} value={ct.uf} onChange={(e) => setCtField('uf', e.target.value.toUpperCase())} className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 outline-none text-sm text-[#0a2619] uppercase" />
+              </div>
+            </div>
+
+            {/* Representante legal */}
+            <p className="text-xs font-bold uppercase tracking-wider text-emerald-700 pt-1">Representante que assina o contrato</p>
+            <div className="grid grid-cols-1 sm:grid-cols-6 gap-3">
+              <div className="space-y-1 sm:col-span-3">
+                <label className="text-xs font-semibold text-slate-600">Nome do Representante *</label>
+                <input type="text" required value={patientName} onChange={(e) => setPatientName(e.target.value)} placeholder="Nome completo" className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 outline-none text-sm text-[#0a2619]" />
+              </div>
+              <div className="space-y-1 sm:col-span-2">
+                <label className="text-xs font-semibold text-slate-600">CPF do Representante *</label>
+                <input type="text" value={ct.representante_cpf} onChange={(e) => setCtField('representante_cpf', e.target.value)} className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 outline-none text-sm text-[#0a2619]" inputMode="numeric" required />
+              </div>
+              <div className="space-y-1 sm:col-span-1">
+                <label className="text-xs font-semibold text-slate-600">RG</label>
+                <input type="text" value={ct.representante_rg} onChange={(e) => setCtField('representante_rg', e.target.value)} className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 outline-none text-sm text-[#0a2619]" />
               </div>
             </div>
 

@@ -9,7 +9,7 @@ import {
   HeartPulse
 } from 'lucide-react';
 import { Page } from '../App';
-import { submitQuotationToRemocoesPro } from '../lib/remocoesPro';
+import { submitQuotationToRemocoesPro, formatProtocol } from '../lib/remocoesPro';
 
 interface PlansProps {
   onNavigate: (page: Page) => void;
@@ -189,7 +189,7 @@ const Plans: React.FC<PlansProps> = ({ onNavigate }) => {
               </p>
               <div className="bg-emerald-50 border border-dashed border-emerald-300 rounded-2xl p-5 inline-block px-10 mb-8">
                 <p className="text-xs font-bold text-emerald-700 uppercase tracking-widest mb-1">Protocolo de Adesão</p>
-                <p className="text-2xl font-black text-emerald-600 font-mono">{protocol.split('-')[0].toUpperCase()}</p>
+                <p className="text-2xl font-black text-emerald-600 font-mono">{formatProtocol(protocol)}</p>
               </div>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <button

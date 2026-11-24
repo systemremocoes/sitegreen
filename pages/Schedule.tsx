@@ -26,6 +26,7 @@ import {
 import {
   submitQuotationToRemocoesPro,
   fetchRemovalTracking,
+  formatProtocol,
   openRemovalDocument,
   TrackingCodeRequiredError
 } from '../lib/remocoesPro';
@@ -102,7 +103,7 @@ const Schedule: React.FC<ScheduleProps> = ({ initialTab = 'schedule' }) => {
 
   const handleCopyProtocol = () => {
     if (!successProtocol) return;
-    navigator.clipboard.writeText(successProtocol.split('-')[0].toUpperCase());
+    navigator.clipboard.writeText(formatProtocol(successProtocol));
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -252,7 +253,7 @@ const Schedule: React.FC<ScheduleProps> = ({ initialTab = 'schedule' }) => {
                           Protocolo de Rastreamento
                         </p>
                         <p className="text-xl font-extrabold text-[#0a2619] font-mono">
-                          {successProtocol.split('-')[0].toUpperCase()}
+                          {formatProtocol(successProtocol)}
                         </p>
                       </div>
                       <button
@@ -269,7 +270,7 @@ const Schedule: React.FC<ScheduleProps> = ({ initialTab = 'schedule' }) => {
                   <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
                     <button
                       onClick={() => {
-                        const message = `*Nova Solicitação (Site)*%0A%0A*Protocolo:* ${successProtocol}%0A*Paciente:* ${formData.patientName}%0A*Origem:* ${formData.origin}%0A*Destino:* ${formData.destination}%0A*Data:* ${formData.date} às ${formData.time}%0A*Tipo:* ${formData.serviceType}`;
+                        const message = `*Nova Solicitação (Site)*%0A%0A*Protocolo:* ${formatProtocol(successProtocol)}%0A*Paciente:* ${formData.patientName}%0A*Origem:* ${formData.origin}%0A*Destino:* ${formData.destination}%0A*Data:* ${formData.date} às ${formData.time}%0A*Tipo:* ${formData.serviceType}`;
                         window.open(`https://wa.me/5519998049901?text=${message}`, '_blank');
                       }}
                       className="bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2"
@@ -511,7 +512,7 @@ const Schedule: React.FC<ScheduleProps> = ({ initialTab = 'schedule' }) => {
                     <input
                       type="text"
                       required
-                      placeholder="Protocolo (Ex: REM123)"
+                      placeholder="Protocolo (Ex: #1A2B3C4D)"
                       value={trackingCode}
                       onChange={(e) => setTrackingCode(e.target.value)}
                       className="w-full text-center text-base font-bold tracking-wider uppercase px-5 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 outline-none bg-slate-50 focus:bg-white"
@@ -589,7 +590,7 @@ const Schedule: React.FC<ScheduleProps> = ({ initialTab = 'schedule' }) => {
                             <span className="inline-block px-2.5 py-0.5 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold uppercase mb-1">
                               Protocolo • {trackingResult.status}
                             </span>
-                            <p className="text-xl font-extrabold text-[#0a2619] font-mono break-all">{trackingResult.protocol}</p>
+                            <p className="text-xl font-extrabold text-[#0a2619] font-mono break-all">{formatProtocol(trackingResult.protocol)}</p>
                           </div>
                           <div className="bg-emerald-50 p-2.5 rounded-xl shrink-0">
                             <Truck size={24} className="text-emerald-600" />

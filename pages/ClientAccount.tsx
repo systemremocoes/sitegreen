@@ -24,6 +24,7 @@ import {
   ClienteProfile,
   ClienteResumo,
   EdgeFunctionError,
+  formatProtocol,
   PortalSolicitacao,
   clearClienteSession,
   clienteAprovar,
@@ -569,7 +570,7 @@ const ClientAccount: React.FC<ClientAccountProps> = ({ onNavigate }) => {
     setSuccess('');
     try {
       const res = await clienteSolicitar(session.token, nova);
-      setSuccess(`${res.message} Protocolo: ${res.protocolo}`);
+      setSuccess(`${res.message} Protocolo: ${formatProtocol(res.protocolo)}`);
       setNova(emptySolicitacao);
       await load();
       setTab('solicitacoes');
@@ -664,7 +665,7 @@ const ClientAccount: React.FC<ClientAccountProps> = ({ onNavigate }) => {
                         <div className="flex flex-col md:flex-row md:items-start justify-between gap-3">
                           <div className="min-w-0">
                             <div className="flex flex-wrap items-center gap-2 mb-1">
-                              <span className="font-mono font-bold text-emerald-700 text-sm">{s.remocao?.protocolo || s.protocolo}</span>
+                              <span className="font-mono font-bold text-emerald-700 text-sm">{formatProtocol(s.remocao?.protocolo || s.protocolo)}</span>
                               <Badge tone={st.tone}>{st.label}</Badge>
                             </div>
                             <p className="font-semibold text-[#0a2619] text-sm">

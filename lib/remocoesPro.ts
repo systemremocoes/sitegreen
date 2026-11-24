@@ -2,10 +2,42 @@ const FUNCTIONS_BASE_URL =
   import.meta.env.VITE_FUNCTIONS_BASE_URL ||
   'https://kijwizzgbrytvgseixme.supabase.co/functions/v1';
 
+/** Protocolo no mesmo formato do sistema Remoções Pro: # + 8 primeiros caracteres do ID, em maiúsculas. */
+export function formatProtocol(id: string | null | undefined): string {
+  const v = String(id || '').trim().replace(/^#/, '');
+  if (!v) return '';
+  // Número de remoção (ex.: 20260316) fica como está
+  if (/^\d{8}$/.test(v)) return `#${v}`;
+  return `#${v.replace(/-/g, '').slice(0, 8).toUpperCase()}`;
+}
+
 export interface QuotationPayload {
   /** 'evento' grava no módulo Eventos do sistema */
   kind?: 'evento';
-  event?: { nome: string; local: string; tipo: string; publico: string; duracao: string; estrutura: string };
+  event?: {
+    nome: string;
+    local: string;
+    tipo: string;
+    publico: string;
+    estrutura: string;
+    data_fim?: string;
+    hora_fim?: string;
+    quantidade_viaturas?: number;
+  };
+  /** Dados do contratante usados pelo sistema para emitir o contrato do evento */
+  contratante?: {
+    empresa: string;
+    cnpj_cpf: string;
+    cep: string;
+    endereco: string;
+    numero: string;
+    bairro: string;
+    cidade: string;
+    uf: string;
+    representante_nome: string;
+    representante_cpf: string;
+    representante_rg?: string;
+  };
   origin: string;
   destination: string;
   date: string;

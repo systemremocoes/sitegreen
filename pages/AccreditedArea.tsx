@@ -21,6 +21,7 @@ import {
 import { Page } from '../App';
 import {
   submitQuotationToRemocoesPro,
+  formatProtocol,
   fetchRemovalTracking,
   openRemovalDocument,
   getAccreditedProtocols,
@@ -772,7 +773,7 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
                   </p>
                   <div className="bg-white border border-dashed border-emerald-300 rounded-xl p-4 inline-block px-8 mb-6">
                     <p className="text-[11px] font-bold text-emerald-700 uppercase tracking-wider mb-1">Protocolo</p>
-                    <p className="text-lg font-extrabold text-[#0a2619] font-mono">{createdProtocol}</p>
+                    <p className="text-lg font-extrabold text-[#0a2619] font-mono">{formatProtocol(createdProtocol)}</p>
                   </div>
                   <div className="flex flex-wrap gap-3 justify-center">
                     <button
@@ -983,7 +984,7 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
                       <div className="flex flex-wrap justify-between items-center gap-3">
                         <div>
                           <p className="text-xs font-bold uppercase text-emerald-700">
-                            Protocolo {trackingData.protocol} • {trackingData.status}
+                            Protocolo {formatProtocol(trackingData.protocol)} • {trackingData.status}
                           </p>
                           <h3 className="text-lg font-bold text-[#0a2619]">{trackingData.patient}</h3>
                           <p className="text-xs text-slate-600">
@@ -1056,7 +1057,7 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
                       >
                         <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
-                            <p className="font-mono font-bold text-emerald-700 text-sm">{protocolo}</p>
+                            <p className="font-mono font-bold text-emerald-700 text-sm">{formatProtocol(protocolo)}</p>
                             <span className="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-100">
                               {status}
                             </span>

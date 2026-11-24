@@ -17,6 +17,7 @@ import {
 import { Page } from '../App';
 import {
   fetchRemovalTracking,
+  formatProtocol,
   openRemovalDocument,
   TrackingCodeRequiredError,
   normalizeDigits,
@@ -135,7 +136,7 @@ const ClientArea: React.FC<ClientAreaProps> = ({
                       type="text"
                       required
                       disabled={!!codeStep}
-                      placeholder="Ex: REM123"
+                      placeholder="Ex: #1A2B3C4D"
                       value={trackingCode}
                       onChange={(e) => setTrackingCode(e.target.value)}
                       className="w-full pl-9 pr-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 outline-none text-sm font-bold uppercase text-[#0a2619]"
@@ -171,7 +172,7 @@ const ClientArea: React.FC<ClientAreaProps> = ({
                       required
                       maxLength={6}
                       value={codeInput}
-                      onChange={(e) => setCodeInput(e.target.value.replace(/D/g, '').slice(0, 6))}
+                      onChange={(e) => setCodeInput(e.target.value.replace(/\D/g, '').slice(0, 6))}
                       placeholder="••••••"
                       className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 outline-none text-center text-2xl font-bold tracking-[0.5em] text-[#0a2619]"
                     />
@@ -227,7 +228,7 @@ const ClientArea: React.FC<ClientAreaProps> = ({
                         <span className="inline-block px-2.5 py-0.5 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold uppercase mb-1">
                           Protocolo
                         </span>
-                        <p className="text-xl font-extrabold text-[#0a2619] font-mono break-all">{trackingResult.protocol}</p>
+                        <p className="text-xl font-extrabold text-[#0a2619] font-mono break-all">{formatProtocol(trackingResult.protocol)}</p>
                       </div>
                       <div className="bg-emerald-50 p-2.5 rounded-xl shrink-0">
                         <Truck size={24} className="text-emerald-600" />
