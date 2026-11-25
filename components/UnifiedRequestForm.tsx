@@ -17,6 +17,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { submitQuotationToRemocoesPro, formatProtocol } from '../lib/remocoesPro';
+import TomadorFields, { TomadorData, emptyTomador, validarTomador, tomadorPayload } from './TomadorFields';
 
 export type RequestFormMode = 'removal' | 'event';
 
@@ -80,6 +81,8 @@ const UnifiedRequestForm: React.FC<UnifiedRequestFormProps> = ({
   const [audience, setAudience] = useState('Até 500 pessoas');
   const [eventStructure, setEventStructure] = useState('Ambulância Básica (Tipo B)');
   const [email, setEmail] = useState('');
+  // Remoção avulsa: quem paga (boleto e nota fiscal)
+  const [tomador, setTomador] = useState<TomadorData>(emptyTomador);
   // Evento: dados usados pelo sistema para emitir o contrato
   const [dateEnd, setDateEnd] = useState('');
   const [timeEnd, setTimeEnd] = useState('');
@@ -147,6 +150,7 @@ const UnifiedRequestForm: React.FC<UnifiedRequestFormProps> = ({
     setEventName('');
     setEventLocation('');
     setEmail('');
+    setTomador(emptyTomador);
     setDateEnd('');
     setTimeEnd('');
     setAmbulanceCount('1');
@@ -166,6 +170,11 @@ const UnifiedRequestForm: React.FC<UnifiedRequestFormProps> = ({
     if (mode === 'removal') {
       if (!origin.trim() || !destination.trim() || !patientName.trim() || !contactPhone.trim()) {
         alert('Preencha origem, destino, nome do paciente e telefone de contato.');
+        return;
+      }
+      const faltaTomador = validarTomador(tomador, patientName);
+      if (faltaTomador.length) {
+        alert(`Para faturar e emitir a nota fiscal, preencha: ${faltaTomador.join(', ')}.`);
         return;
       }
     } else {
@@ -199,6 +208,8 @@ const UnifiedRequestForm: React.FC<UnifiedRequestFormProps> = ({
               patientAge: patientAge.trim(),
               contactPhone: contactPhone.trim(),
               email: email.trim(),
+              cpf: tomador.cnpj_cpf.replace(/\D/g, ''),
+              tomador: tomadorPayload(tomador, patientName),
               observations: observations.trim(),
               serviceType,
               source: `${sourcePrefix}_removal`
@@ -493,6 +504,7 @@ const UnifiedRequestForm: React.FC<UnifiedRequestFormProps> = ({
                 })}
               </div>
             </div>
+            <TomadorFields value={tomador} onChange={setTomador} />
           </>
         ) : (
           <>

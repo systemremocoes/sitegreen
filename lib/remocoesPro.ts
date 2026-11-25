@@ -12,6 +12,18 @@ export function formatProtocol(id: string | null | undefined): string {
 }
 
 export interface QuotationPayload {
+  /** Remoção avulsa: quem paga (boleto e nota fiscal) */
+  tomador?: {
+    tipo: 'paciente' | 'outro';
+    razao_social: string;
+    cnpj_cpf: string;
+    cep: string;
+    endereco: string;
+    numero: string;
+    bairro: string;
+    cidade: string;
+    uf: string;
+  };
   /** 'evento' grava no módulo Eventos do sistema */
   kind?: 'evento';
   event?: {

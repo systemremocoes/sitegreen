@@ -30,6 +30,7 @@ import {
   openRemovalDocument,
   TrackingCodeRequiredError
 } from '../lib/remocoesPro';
+import TomadorFields, { TomadorData, emptyTomador, validarTomador, tomadorPayload } from '../components/TomadorFields';
 
 interface ScheduleProps {
   initialTab?: 'schedule' | 'tracking';
@@ -76,6 +77,8 @@ const Schedule: React.FC<ScheduleProps> = ({ initialTab = 'schedule' }) => {
     serviceType: 'simples'
   });
 
+  // Quem paga a remoção (boleto e nota fiscal)
+  const [tomador, setTomador] = useState<TomadorData>(emptyTomador);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [successProtocol, setSuccessProtocol] = useState<string | null>(null);
@@ -115,11 +118,18 @@ const Schedule: React.FC<ScheduleProps> = ({ initialTab = 'schedule' }) => {
       alert('Por favor, preencha origem, destino, nome do paciente e telefone de contato.');
       return;
     }
+    const faltaTomador = validarTomador(tomador, formData.patientName);
+    if (faltaTomador.length) {
+      alert(`Para faturar e emitir a nota fiscal, preencha: ${faltaTomador.join(', ')}.`);
+      return;
+    }
 
     setLoading(true);
     try {
       const result = await submitQuotationToRemocoesPro({
         ...formData,
+        cpf: tomador.cnpj_cpf.replace(/\D/g, ''),
+        tomador: tomadorPayload(tomador, formData.patientName),
         date: formData.date || new Date().toISOString().split('T')[0],
         time: formData.time || new Date().toTimeString().slice(0, 5),
         source: 'schedule_page'
@@ -425,6 +435,8 @@ const Schedule: React.FC<ScheduleProps> = ({ initialTab = 'schedule' }) => {
                           className="w-full px-3.5 py-2.5 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:border-emerald-500 outline-none text-sm text-[#0a2619]"
                         />
                       </div>
+
+                      <TomadorFields value={tomador} onChange={setTomador} />
 
                       <div className="space-y-1">
                         <label className="text-xs font-semibold text-slate-600">Observações Médicas (Opcional)</label>
