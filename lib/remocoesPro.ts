@@ -135,6 +135,7 @@ export interface BoletoItem {
   linha_digitavel: string | null;
   codigo_barras: string | null;
   qr_code_pix: string | null;
+  qr_code_pix_imagem?: string | null;
   pdf_url: string | null;
 }
 
@@ -150,6 +151,7 @@ export interface InvoiceItem {
   linha_digitavel: string | null;
   codigo_barras: string | null;
   qr_code_pix: string | null;
+  qr_code_pix_imagem?: string | null;
   nfse_numero: string | null;
   nfse_status: string | null;
   nfse_pdf_url: string | null;
@@ -665,6 +667,8 @@ export interface ClienteBoleto {
   status: string;
   data_pagamento: string | null;
   linha_digitavel: string | null;
+  qr_code_pix?: string | null;
+  qr_code_pix_imagem?: string | null;
   pdf_url: string | null;
   pagar_url: string | null;
 }

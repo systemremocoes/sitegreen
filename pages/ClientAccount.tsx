@@ -805,6 +805,29 @@ const ClientAccount: React.FC<ClientAccountProps> = ({ onNavigate }) => {
                             </button>
                           </div>
                         )}
+                        {aberto && b.qr_code_pix && (
+                          <div className="mt-3 p-3 rounded-xl bg-emerald-50/60 border border-emerald-100 flex flex-col sm:flex-row sm:items-center gap-3">
+                            {b.qr_code_pix_imagem && (
+                              <img
+                                src={`data:image/png;base64,${b.qr_code_pix_imagem}`}
+                                alt="QR Code PIX"
+                                className="w-32 h-32 shrink-0 bg-white p-1 rounded-lg border border-slate-200"
+                              />
+                            )}
+                            <div className="flex-1 min-w-0 space-y-2">
+                              <p className="text-xs font-bold text-emerald-900">Prefere PIX? Leia o QR Code no app do banco ou copie o código.</p>
+                              <code className="block text-[11px] text-slate-700 break-all max-h-20 overflow-auto">{b.qr_code_pix}</code>
+                              <button
+                                type="button"
+                                onClick={() => copy(`pix-${b.id}`, b.qr_code_pix!)}
+                                className="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-bold text-slate-700 inline-flex items-center gap-1"
+                              >
+                                {copied === `pix-${b.id}` ? <Check size={13} /> : <Copy size={13} />}
+                                {copied === `pix-${b.id}` ? 'PIX copiado' : 'Copiar PIX'}
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     );
                   })}

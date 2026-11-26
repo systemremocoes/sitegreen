@@ -706,6 +706,18 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
                             {boleto.linha_digitavel && (
                               <p className="text-xs font-mono text-slate-400 break-all">{boleto.linha_digitavel}</p>
                             )}
+                            {boleto.qr_code_pix_imagem && !/pag/i.test(boleto.status) && (
+                              <div className="flex items-center gap-3 pt-2">
+                                <img
+                                  src={`data:image/png;base64,${boleto.qr_code_pix_imagem}`}
+                                  alt="QR Code PIX"
+                                  className="w-28 h-28 bg-white p-1 rounded-lg border border-slate-200"
+                                />
+                                <p className="text-xs text-slate-500 max-w-[220px]">
+                                  Pague pelo PIX: aponte a câmera do app do banco para o QR Code ou use “Copiar PIX”.
+                                </p>
+                              </div>
+                            )}
                           </div>
 
                           <div className="flex flex-wrap gap-2 shrink-0">
@@ -780,6 +792,16 @@ const AccreditedArea: React.FC<AccreditedAreaProps> = ({ onNavigate }) => {
                               >
                                 {copiedId === `inv-lin-${inv.id}` ? <Check size={14} /> : <Copy size={14} />}
                                 <span>{copiedId === `inv-lin-${inv.id}` ? 'Copiado!' : 'Linha Digitável'}</span>
+                              </button>
+                            )}
+                            {inv.qr_code_pix && inv.status !== 'Pago' && (
+                              <button
+                                type="button"
+                                onClick={() => handleCopy(`inv-pix-${inv.id}`, inv.qr_code_pix!)}
+                                className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-[#0a2619] font-bold text-xs flex items-center gap-1.5"
+                              >
+                                {copiedId === `inv-pix-${inv.id}` ? <Check size={14} /> : <QrCode size={14} />}
+                                <span>{copiedId === `inv-pix-${inv.id}` ? 'PIX Copiado!' : 'Copiar PIX'}</span>
                               </button>
                             )}
                             {safeExternalUrl(inv.boleto_pdf_url) && (
